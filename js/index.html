@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SurvivalGame</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,700;0,900;1,400&display=swap" rel="stylesheet" />
+    <style>
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+    --bg:#080c14;
+    --surface:#0f1520;
+    --card:#141d2e;
+    --border:#1e2d47;
+    --green:#22c55e;
+    --red:#ef4444;
+    --gray:#64748b;
+    --text:#e2e8f0;
+    --muted:#64748b;
+    --accent:#6366f1;
+    --accent2:#818cf8;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;}
+
+/* ── Screens ─────────────────────────────────────────────────────────────── */
+.screen{
+    position:fixed;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    transition:opacity .35s ease,transform .35s ease;
+}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(.97);}
+.screen.slide-left{transform:translateX(-60px);}
+.screen.slide-right{transform:translateX(60px);}
+
+/* ── Particles (decorative background dots) ─────────────────────────────── */
+#particles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0;}
+.particle{
+    position:absolute;border-radius:50%;
+    animation:float linear infinite;
+    opacity:0;
+}
+@keyframes float{
+    0%  {transform:translateY(100vh) scale(0); opacity:0;}
+    10% {opacity:.6;}
+    90% {opacity:.4;}
+    100%{transform:translateY(-20px) scale(1.2); opacity:0;}
+}
+
+/* ── Main Menu ───────────────────────────────────────────────────────────── */
+#menu{z-index:10;gap:2.5rem;}
+
+.logo-big{text-align:center;}
+.logo-big .icon{font-size:4rem;display:block;margin-bottom:.5rem;filter:drop-shadow(0 0 20px rgba(99,102,241,.7));}
+.logo-big h1{
+    font-size:3.6rem;font-weight:900;letter-spacing:-.04em;
+    background:linear-gradient(135deg,#a5b4fc,#6366f1,#818cf8);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    text-shadow:none;
+}
+.logo-big p{color:var(--muted);margin-top:.4rem;font-size:1rem;letter-spacing:.04em;text-transform:uppercase;}
+
+.menu-cards{display:flex;gap:1.25rem;flex-wrap:wrap;justify-content:center;}
+
+.menu-card{
+    width:220px;padding:2rem 1.5rem;border-radius:1.25rem;
+    background:var(--card);border:1px solid var(--border);
+    cursor:pointer;text-align:center;
+    transition:transform .2s,box-shadow .2s,border-color .2s;
+    position:relative;overflow:hidden;
+}
+.menu-card::before{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(135deg,rgba(99,102,241,.08),transparent);
+    opacity:0;transition:opacity .2s;
+}
+.menu-card:hover{transform:translateY(-6px);border-color:var(--accent);box-shadow:0 12px 40px rgba(99,102,241,.25);}
+.menu-card:hover::before{opacity:1;}
+.menu-card:active{transform:translateY(-2px);}
+
+.menu-card .card-icon{font-size:2.5rem;margin-bottom:1rem;display:block;}
+.menu-card h2{font-size:1.1rem;font-weight:700;margin-bottom:.4rem;}
+.menu-card p{font-size:.8rem;color:var(--muted);line-height:1.5;}
+
+/* ── Config Screen ───────────────────────────────────────────────────────── */
+#config{z-index:10;gap:2rem;padding:2rem;}
+
+.config-panel{
+    background:var(--card);border:1px solid var(--border);border-radius:1.5rem;
+    padding:2.5rem;width:100%;max-width:520px;
+    box-shadow:0 0 60px rgba(99,102,241,.1);
+}
+.config-panel h2{font-size:1.5rem;font-weight:800;margin-bottom:.25rem;}
+.config-panel .sub{color:var(--muted);font-size:.85rem;margin-bottom:2rem;}
+
+.param-group{display:flex;flex-direction:column;gap:1.25rem;margin-bottom:2rem;}
+
+.param{display:flex;flex-direction:column;gap:.5rem;}
+.param-header{display:flex;justify-content:space-between;align-items:center;}
+.param-label{font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:.5rem;}
+.param-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.param-dot.green{background:var(--green);box-shadow:0 0 6px var(--green);}
+.param-dot.red  {background:var(--red);  box-shadow:0 0 6px var(--red);}
+.param-dot.gray {background:var(--gray); border-radius:2px;}
+.param-value{
+    font-size:1.1rem;font-weight:700;min-width:2.5rem;text-align:right;
+    background:var(--surface);border:1px solid var(--border);border-radius:.4rem;
+    padding:.1rem .5rem;
+}
+.param-value.green{color:var(--green);}
+.param-value.red  {color:var(--red);}
+.param-value.gray {color:var(--gray);}
+
+input[type=range]{
+    width:100%;height:5px;border-radius:999px;outline:none;border:none;cursor:pointer;
+    -webkit-appearance:none;appearance:none;
+    background:var(--border);
+}
+input[type=range].green::-webkit-slider-thumb{background:var(--green);box-shadow:0 0 8px var(--green);}
+input[type=range].red::-webkit-slider-thumb  {background:var(--red);  box-shadow:0 0 8px var(--red);}
+input[type=range].gray::-webkit-slider-thumb {background:var(--gray);}
+input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:16px;height:16px;border-radius:50%;cursor:pointer;transition:transform .1s;
+}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25);}
+input[type=range].green{background:linear-gradient(to right,var(--green) var(--pct,50%),var(--border) var(--pct,50%));}
+input[type=range].red  {background:linear-gradient(to right,var(--red)   var(--pct,50%),var(--border) var(--pct,50%));}
+input[type=range].gray {background:linear-gradient(to right,var(--gray)  var(--pct,50%),var(--border) var(--pct,50%));}
+
+.config-actions{display:flex;gap:.75rem;}
+
+/* ── Game Screen ─────────────────────────────────────────────────────────── */
+#game{z-index:10;gap:1rem;justify-content:flex-start;padding:1.5rem 1rem 2rem;overflow-y:auto;}
+
+.game-header{display:flex;align-items:center;gap:1rem;width:100%;max-width:1020px;}
+.btn-back{
+    background:var(--card);border:1px solid var(--border);color:var(--text);
+    border-radius:.6rem;padding:.45rem .9rem;font-family:inherit;font-size:.85rem;
+    font-weight:600;cursor:pointer;transition:background .15s,border-color .15s;
+    flex-shrink:0;
+}
+.btn-back:hover{background:var(--border);border-color:var(--accent);}
+
+.stats-bar{
+    display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center;
+    background:var(--card);border:1px solid var(--border);border-radius:1rem;
+    padding:.6rem 1.2rem;flex:1;
+}
+.stat{display:flex;align-items:center;gap:.45rem;font-size:.85rem;}
+.stat-dot{width:9px;height:9px;border-radius:50%;}
+.stat-dot.green{background:var(--green);box-shadow:0 0 5px var(--green);}
+.stat-dot.red  {background:var(--red);  box-shadow:0 0 5px var(--red);}
+.stat-dot.gray {background:var(--gray); border-radius:2px;}
+.stat-label{color:var(--muted);}
+.stat-value{font-weight:700;}
+.stat-value.green{color:var(--green);}
+.stat-value.red  {color:var(--red);}
+
+.game-controls{display:flex;gap:.6rem;flex-shrink:0;}
+
+.canvas-wrapper{
+    border-radius:.75rem;overflow:hidden;border:1.5px solid var(--border);
+    box-shadow:0 0 50px rgba(99,102,241,.1);flex-shrink:0;
+}
+canvas{display:block;}
+
+/* ── Info Screen ─────────────────────────────────────────────────────────── */
+#info{z-index:10;gap:2rem;padding:2rem;}
+.info-panel{
+    background:var(--card);border:1px solid var(--border);border-radius:1.5rem;
+    padding:2.5rem;max-width:560px;width:100%;
+    box-shadow:0 0 60px rgba(99,102,241,.1);
+}
+.info-panel h2{font-size:1.5rem;font-weight:800;margin-bottom:1.5rem;}
+.info-row{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.25rem;}
+.info-icon{font-size:1.8rem;flex-shrink:0;width:2.5rem;text-align:center;}
+.info-row h3{font-size:.95rem;font-weight:700;margin-bottom:.2rem;}
+.info-row p{font-size:.82rem;color:var(--muted);line-height:1.6;}
+.info-divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0;}
+.algo-block{background:var(--surface);border-radius:.75rem;padding:1rem;font-size:.82rem;color:var(--muted);line-height:1.7;border:1px solid var(--border);}
+.algo-block strong{color:var(--text);}
+
+/* ── Shared Buttons ──────────────────────────────────────────────────────── */
+.btn{
+    display:inline-flex;align-items:center;gap:.4rem;
+    padding:.65rem 1.4rem;border-radius:.65rem;
+    font-family:inherit;font-size:.9rem;font-weight:700;
+    cursor:pointer;border:none;
+    transition:transform .1s,box-shadow .2s,background .15s,opacity .15s;
+}
+.btn:active{transform:scale(.96);}
+.btn-primary{
+    background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;
+    box-shadow:0 4px 20px rgba(99,102,241,.4);
+}
+.btn-primary:hover{box-shadow:0 6px 28px rgba(99,102,241,.6);}
+.btn-secondary{
+    background:var(--surface);color:var(--text);border:1px solid var(--border);
+}
+.btn-secondary:hover{background:var(--border);}
+.btn-danger{
+    background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3);
+}
+.btn-danger:hover{background:rgba(239,68,68,.25);}
+    </style>
+</head>
+<body>
+
+<!-- Fondo animado -->
+<div id="particles"></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     PANTALLA 1 – MENÚ PRINCIPAL
+     ══════════════════════════════════════════════════════════════════════════ -->
+<div id="menu" class="screen">
+    <div class="logo-big">
+        <span class="icon">⚔️</span>
+        <h1>SurvivalGame</h1>
+        <p>Simulación de persecución y huida</p>
+    </div>
+
+    <div class="menu-cards">
+        <div class="menu-card" id="btn-goto-config">
+            <span class="card-icon">🎮</span>
+            <h2>Jugar</h2>
+            <p>Configura el número de buenos, malos y obstáculos y lanza la simulación.</p>
+        </div>
+        <div class="menu-card" id="btn-goto-info">
+            <span class="card-icon">🧠</span>
+            <h2>Cómo funciona</h2>
+            <p>Algoritmos de persecución y huida, estrategias de movimiento y reglas del juego.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     PANTALLA 2 – CONFIGURACIÓN
+     ══════════════════════════════════════════════════════════════════════════ -->
+<div id="config" class="screen hidden">
+    <div class="config-panel">
+        <h2>⚙️ Configurar partida</h2>
+        <p class="sub">Ajusta los parámetros antes de iniciar la simulación</p>
+
+        <div class="param-group">
+            <!-- Buenos -->
+            <div class="param">
+                <div class="param-header">
+                    <span class="param-label"><span class="param-dot green"></span>Buenos (huyen)</span>
+                    <span class="param-value green" id="val-buenos">10</span>
+                </div>
+                <input type="range" class="green" id="sl-buenos" min="1" max="80" value="10" />
+            </div>
+            <!-- Malos -->
+            <div class="param">
+                <div class="param-header">
+                    <span class="param-label"><span class="param-dot red"></span>Malos (persiguen)</span>
+                    <span class="param-value red" id="val-malos">5</span>
+                </div>
+                <input type="range" class="red" id="sl-malos" min="1" max="40" value="5" />
+            </div>
+            <!-- Obstáculos -->
+            <div class="param">
+                <div class="param-header">
+                    <span class="param-label"><span class="param-dot gray"></span>Obstáculos</span>
+                    <span class="param-value gray" id="val-obs">15</span>
+                </div>
+                <input type="range" class="gray" id="sl-obs" min="0" max="120" value="15" />
+            </div>
+        </div>
+
+        <div class="config-actions">
+            <button class="btn btn-secondary" id="btn-config-back">← Volver</button>
+            <button class="btn btn-primary" id="btn-start" style="flex:1">▶ Iniciar simulación</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     PANTALLA 3 – JUEGO
+     ══════════════════════════════════════════════════════════════════════════ -->
+<div id="game" class="screen hidden">
+    <div class="game-header">
+        <button class="btn-back" id="btn-game-back">← Menú</button>
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-dot green"></div>
+                <span class="stat-label">Buenos</span>
+                <span class="stat-value green" id="stat-buenos">0</span>
+            </div>
+            <div class="stat">
+                <div class="stat-dot red"></div>
+                <span class="stat-label">Malos</span>
+                <span class="stat-value red" id="stat-malos">0</span>
+            </div>
+            <div class="stat">
+                <div class="stat-dot gray"></div>
+                <span class="stat-label">Obstáculos</span>
+                <span class="stat-value" id="stat-obs">0</span>
+            </div>
+            <div class="stat" style="margin-left:auto;">
+                <span class="stat-label">Tick</span>
+                <span class="stat-value" id="stat-tick">0</span>
+            </div>
+        </div>
+        <div class="game-controls">
+            <button class="btn btn-secondary" id="btn-pause">⏸</button>
+            <button class="btn btn-secondary" id="btn-restart">🔄</button>
+        </div>
+    </div>
+
+    <div class="canvas-wrapper">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     PANTALLA 4 – INFORMACIÓN
+     ══════════════════════════════════════════════════════════════════════════ -->
+<div id="info" class="screen hidden">
+    <div class="info-panel">
+        <h2>🧠 Cómo funciona</h2>
+
+        <div class="info-row">
+            <div class="info-icon">🟢</div>
+            <div>
+                <h3>Buenos — estrategia Huir</h3>
+                <p>En cada tick evalúan las 8 casillas adyacentes (incluyendo diagonales) y se mueven a la que <strong>maximiza</strong> su distancia euclidiana al malo más cercano.</p>
+            </div>
+        </div>
+        <div class="info-row">
+            <div class="info-icon">🔴</div>
+            <div>
+                <h3>Malos — estrategia Perseguir</h3>
+                <p>Evalúan las 8 casillas adyacentes y se mueven a la que <strong>minimiza</strong> su distancia euclidiana al bueno más cercano.</p>
+            </div>
+        </div>
+        <div class="info-row">
+            <div class="info-icon">⬛</div>
+            <div>
+                <h3>Obstáculos</h3>
+                <p>Casillas bloqueadas. Ningún personaje puede ocuparlas ni atravesarlas.</p>
+            </div>
+        </div>
+
+        <hr class="info-divider" />
+
+        <div class="algo-block">
+            <strong>Algoritmo de movimiento (ambas estrategias):</strong><br/>
+            1. Iterar las 8 posiciones adyacentes<br/>
+            2. Filtrar posiciones fuera del mapa, obstáculos y aliados<br/>
+            3. Calcular distancia euclídea: <em>d = √[(Δx)² + (Δy)²]</em><br/>
+            4. Escoger la posición que max/min imiza d<br/>
+            5. Si no hay movimiento válido → el personaje se queda quieto
+        </div>
+
+        <div style="margin-top:1.5rem;text-align:center;">
+            <button class="btn btn-primary" id="btn-info-back" style="min-width:160px;">← Volver al menú</button>
+        </div>
+    </div>
+</div>
+
+<script>
+'use strict';
+
+// ── Partículas decorativas ────────────────────────────────────────────────────
+(function(){
+    const container = document.getElementById('particles');
+    const colors = ['#6366f1','#22c55e','#ef4444','#818cf8'];
+    for(let i=0;i<30;i++){
+        const p=document.createElement('div');
+        p.className='particle';
+        const sz=Math.random()*5+3;
+        p.style.cssText=`
+            width:${sz}px;height:${sz}px;
+            left:${Math.random()*100}%;
+            background:${colors[Math.floor(Math.random()*colors.length)]};
+            animation-duration:${8+Math.random()*14}s;
+            animation-delay:${Math.random()*10}s;
+        `;
+        container.appendChild(p);
+    }
+})();
+
+// ── Navegación entre pantallas ────────────────────────────────────────────────
+const screens = {
+    menu:   document.getElementById('menu'),
+    config: document.getElementById('config'),
+    game:   document.getElementById('game'),
+    info:   document.getElementById('info'),
+};
+
+function showScreen(name, direction='right'){
+    const inClass  = direction==='right' ? 'slide-right' : 'slide-left';
+    Object.entries(screens).forEach(([k,s])=>{
+        if(k===name){
+            s.classList.remove('hidden',inClass);
+        } else {
+            s.classList.add('hidden');
+        }
+    });
+}
+
+document.getElementById('btn-goto-config').addEventListener('click',()=>showScreen('config'));
+document.getElementById('btn-goto-info')  .addEventListener('click',()=>showScreen('info'));
+document.getElementById('btn-config-back').addEventListener('click',()=>showScreen('menu','left'));
+document.getElementById('btn-info-back')  .addEventListener('click',()=>showScreen('menu','left'));
+document.getElementById('btn-game-back')  .addEventListener('click',()=>{stopGame(); showScreen('menu','left');});
+
+// ── Sliders de configuración ──────────────────────────────────────────────────
+function bindSlider(sliderId, valueId){
+    const sl = document.getElementById(sliderId);
+    const vl = document.getElementById(valueId);
+    function update(){
+        const pct = (sl.value - sl.min) / (sl.max - sl.min) * 100;
+        sl.style.setProperty('--pct', pct + '%');
+        vl.textContent = sl.value;
+    }
+    sl.addEventListener('input', update);
+    update();
+}
+bindSlider('sl-buenos','val-buenos');
+bindSlider('sl-malos', 'val-malos');
+bindSlider('sl-obs',   'val-obs');
+
+document.getElementById('btn-start').addEventListener('click',()=>{
+    const cfg = {
+        buenos:    +document.getElementById('sl-buenos').value,
+        malos:     +document.getElementById('sl-malos').value,
+        obstaculos:+document.getElementById('sl-obs').value,
+    };
+    showScreen('game');
+    startGame(cfg);
+});
+
+document.getElementById('btn-restart').addEventListener('click',()=>{
+    const cfg = {
+        buenos:    +document.getElementById('sl-buenos').value,
+        malos:     +document.getElementById('sl-malos').value,
+        obstaculos:+document.getElementById('sl-obs').value,
+    };
+    startGame(cfg);
+});
+
+// ── Pausa ─────────────────────────────────────────────────────────────────────
+let pausado = false;
+const btnPause = document.getElementById('btn-pause');
+btnPause.addEventListener('click',()=>{
+    pausado = !pausado;
+    btnPause.textContent = pausado ? '▶' : '⏸';
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LÓGICA DEL JUEGO
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Posicion ──────────────────────────────────────────────────────────────────
+class Posicion{
+    constructor(x,y){this._x=x;this._y=y;}
+    getX(){return this._x;} setX(x){this._x=x;}
+    getY(){return this._y;} setY(y){this._y=y;}
+    static calcularDistancia(p1,p2){
+        return Math.sqrt((p1._x-p2._x)**2+(p1._y-p2._y)**2);
+    }
+}
+
+// ── Estrategias ───────────────────────────────────────────────────────────────
+const DX=[-1,0,1,-1,1,-1,0,1];
+const DY=[-1,-1,-1,0,0,1,1,1];
+
+class Huir{
+    mover(actual,objetivo,mapa){
+        let best=0,vx=0,vy=0;
+        for(let i=0;i<8;i++){
+            const nx=actual._x+DX[i], ny=actual._y+DY[i];
+            if(nx>=0&&nx<mapa[0].length&&ny>=0&&ny<mapa.length){
+                const c=mapa[ny][nx];
+                if(c===null||(!c.esObstaculo()&&!c.esBueno())){
+                    const d=Posicion.calcularDistancia(new Posicion(nx,ny),objetivo);
+                    if(d>best){best=d;vx=DX[i];vy=DY[i];}
+                }
+            }
+        }
+        return new Posicion(actual._x+vx,actual._y+vy);
+    }
+}
+
+class Perseguir{
+    mover(actual,objetivo,mapa){
+        let best=Infinity,vx=0,vy=0;
+        for(let i=0;i<8;i++){
+            const nx=actual._x+DX[i], ny=actual._y+DY[i];
+            if(nx>=0&&nx<mapa[0].length&&ny>=0&&ny<mapa.length){
+                const c=mapa[ny][nx];
+                if(c===null||(!c.esObstaculo()&&!c.esMalo())){
+                    const d=Posicion.calcularDistancia(new Posicion(nx,ny),objetivo);
+                    if(d<best){best=d;vx=DX[i];vy=DY[i];}
+                }
+            }
+        }
+        return new Posicion(actual._x+vx,actual._y+vy);
+    }
+}
+
+// ── Elementos ─────────────────────────────────────────────────────────────────
+class Elementos{
+    constructor(x,y,mov){this.posi=new Posicion(x,y);this.objetivo=null;this._mov=mov;}
+    getPosiX(){return this.posi._x;}
+    getPosiY(){return this.posi._y;}
+    getPosi(){return this.posi;}
+    setObjetivo(o){this.objetivo=o;}
+    esObstaculo(){return false;} esMalo(){return false;} esBueno(){return false;}
+    mover(mapa){
+        if(this.objetivo!==null)
+            this.posi=this._mov.mover(this.posi,this.objetivo.posi,mapa);
+    }
+}
+class Buenos   extends Elementos{constructor(x,y){super(x,y,new Huir());    }esBueno(){return true;}}
+class Malos    extends Elementos{constructor(x,y){super(x,y,new Perseguir());}esMalo(){return true;}}
+class Obstaculos extends Elementos{constructor(x,y){super(x,y,null);}esObstaculo(){return true;}}
+
+// ── Mapa ──────────────────────────────────────────────────────────────────────
+class Mapa{
+    constructor(alto,ancho){
+        this.alto=alto;this.ancho=ancho;
+        this.grid=Array.from({length:alto},()=>Array(ancho).fill(null));
+        this.buenos=[];this.malos=[];
+    }
+    _rnd(max){return Math.floor(Math.random()*max);}
+    _freePos(){
+        let x,y;
+        do{x=this._rnd(this.ancho);y=this._rnd(this.alto);}
+        while(this.grid[y][x]!==null);
+        return{x,y};
+    }
+    _place(elem){
+        const{x,y}=this._freePos();
+        elem.posi._x=x;elem.posi._y=y;
+        this.grid[y][x]=elem;
+    }
+    generarConConfig(numBuenos,numMalos,numObs){
+        const maxElem=this.alto*this.ancho-1;
+        numObs  =Math.min(numObs,  Math.floor(maxElem*0.4));
+        numBuenos=Math.min(numBuenos,Math.floor((maxElem-numObs)*0.6));
+        numMalos =Math.min(numMalos, maxElem-numObs-numBuenos);
+
+        for(let i=0;i<numObs;i++)   this._place(new Obstaculos(0,0));
+        for(let i=0;i<numBuenos;i++){const b=new Buenos(0,0);  this.buenos.push(b);this._place(b);}
+        for(let i=0;i<numMalos;i++) {const m=new Malos(0,0);   this.malos.push(m); this._place(m);}
+    }
+    _nearMalo(b){
+        let c=null,mn=Infinity;
+        for(const m of this.malos){const d=Posicion.calcularDistancia(m.posi,b.posi);if(d<mn){mn=d;c=m;}}
+        return c;
+    }
+    _nearBueno(m){
+        let c=null,mn=Infinity;
+        for(const b of this.buenos){const d=Posicion.calcularDistancia(m.posi,b.posi);if(d<mn){mn=d;c=b;}}
+        return c;
+    }
+    refrescar(){
+        for(const b of this.buenos){b.setObjetivo(this._nearMalo(b)); this.grid[b.getPosiY()][b.getPosiX()]=null;}
+        for(const m of this.malos) {m.setObjetivo(this._nearBueno(m));this.grid[m.getPosiY()][m.getPosiX()]=null;}
+        for(const b of this.buenos){b.mover(this.grid);this.grid[b.getPosiY()][b.getPosiX()]=b;}
+        for(const m of this.malos) {m.mover(this.grid);this.grid[m.getPosiY()][m.getPosiX()]=m;}
+        this.buenos=this.buenos.filter(b=>
+            !this.malos.some(m=>m.getPosiX()===b.getPosiX()&&m.getPosiY()===b.getPosiY())
+        );
+    }
+}
+
+// ── Canvas & Loop ─────────────────────────────────────────────────────────────
+const CELL=10,ALTO=60,ANCHO=100,FPS_MS=50;
+const canvas=document.getElementById('gameCanvas');
+const ctx=canvas.getContext('2d');
+canvas.width=ANCHO*CELL; canvas.height=ALTO*CELL;
+
+const elB=document.getElementById('stat-buenos');
+const elM=document.getElementById('stat-malos');
+const elO=document.getElementById('stat-obs');
+const elT=document.getElementById('stat-tick');
+
+let mapa,timer,tick=0,numObsCfg=0;
+
+function startGame(cfg){
+    stopGame();
+    pausado=false;btnPause.textContent='⏸';
+    mapa=new Mapa(ALTO,ANCHO);
+    mapa.generarConConfig(cfg.buenos,cfg.malos,cfg.obstaculos);
+    numObsCfg=cfg.obstaculos;
+    tick=0;
+    timer=setInterval(gameLoop,FPS_MS);
+}
+
+function stopGame(){
+    if(timer){clearInterval(timer);timer=null;}
+}
+
+function gameLoop(){
+    if(pausado)return;
+    mapa.refrescar();
+    tick++;
+    render();
+    elB.textContent=mapa.buenos.length;
+    elM.textContent=mapa.malos.length;
+    elO.textContent=numObsCfg;
+    elT.textContent=tick;
+    if(mapa.buenos.length===0){stopGame();gameOver();}
+}
+
+function render(){
+    ctx.fillStyle='#080c14';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle='#111827';ctx.lineWidth=.3;
+    for(let i=0;i<=ALTO;i++){ctx.beginPath();ctx.moveTo(0,i*CELL);ctx.lineTo(canvas.width,i*CELL);ctx.stroke();}
+    for(let j=0;j<=ANCHO;j++){ctx.beginPath();ctx.moveTo(j*CELL,0);ctx.lineTo(j*CELL,canvas.height);ctx.stroke();}
+
+    for(let i=0;i<ALTO;i++){
+        for(let j=0;j<ANCHO;j++){
+            const e=mapa.grid[i][j]; if(!e) continue;
+            const cx=j*CELL+CELL/2, cy=i*CELL+CELL/2, r=CELL/2-1;
+            if(e.esObstaculo()){
+                ctx.fillStyle='#374151';
+                ctx.fillRect(j*CELL+1,i*CELL+1,CELL-2,CELL-2);
+                continue;
+            }
+            const col=e.esBueno()?'#22c55e':'#ef4444';
+            ctx.shadowColor=col;ctx.shadowBlur=7;
+            ctx.fillStyle=col;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+            ctx.shadowBlur=0;
+            ctx.fillStyle='rgba(255,255,255,.2)';ctx.beginPath();ctx.arc(cx-1,cy-1,r*.38,0,Math.PI*2);ctx.fill();
+        }
+    }
+}
+
+function gameOver(){
+    ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.shadowBlur=24;ctx.shadowColor='#ef4444';
+    ctx.fillStyle='#ef4444';
+    ctx.font=`bold ${CELL*3.2}px Inter,sans-serif`;ctx.textAlign='center';
+    ctx.fillText('¡Los malos ganaron!',canvas.width/2,canvas.height/2-CELL*1.5);
+    ctx.shadowBlur=0;ctx.fillStyle='#94a3b8';
+    ctx.font=`${CELL*1.3}px Inter,sans-serif`;
+    ctx.fillText(`Supervivieron ${tick} ticks`,canvas.width/2,canvas.height/2+CELL*2);
+    ctx.fillText('Pulsa 🔄 para reiniciar',canvas.width/2,canvas.height/2+CELL*4);
+}
+</script>
+</body>
+</html>

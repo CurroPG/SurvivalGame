@@ -860,7 +860,8 @@ function triggerLevelUp(){
             elLvlOverlay.classList.add('hidden');
             arcState = 'playing';
             updateHUD();
-            keys = {}; // resetear teclas para evitar quedarse atascado
+            // Añadir inmunidad de 2 segundos al subir de nivel para evitar morir instantáneamente
+            player.invincible = 2000; 
         };
         elPwrUpCont.appendChild(div);
     });

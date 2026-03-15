@@ -167,21 +167,59 @@ input[type=range].gray {background:linear-gradient(to right,var(--gray)  var(--p
 }
 canvas{display:block;}
 
-/* ── Info Screen ─────────────────────────────────────────────────────────── */
-#info{z-index:10;gap:2rem;padding:2rem;}
-.info-panel{
-    background:var(--card);border:1px solid var(--border);border-radius:1.5rem;
-    padding:2.5rem;max-width:560px;width:100%;
-    box-shadow:0 0 60px rgba(99,102,241,.1);
+/* ── Info Screen (Mini-juego) ────────────────────────────────────────────── */
+#info{z-index:10;gap:0;padding:0;justify-content:flex-start;}
+.info-header{
+    display:flex;align-items:center;gap:1rem;
+    width:100%;padding:.8rem 1rem;
+    background:var(--surface);border-bottom:1px solid var(--border);
+    flex-shrink:0;
 }
-.info-panel h2{font-size:1.5rem;font-weight:800;margin-bottom:1.5rem;}
-.info-row{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.25rem;}
-.info-icon{font-size:1.8rem;flex-shrink:0;width:2.5rem;text-align:center;}
-.info-row h3{font-size:.95rem;font-weight:700;margin-bottom:.2rem;}
-.info-row p{font-size:.82rem;color:var(--muted);line-height:1.6;}
-.info-divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0;}
-.algo-block{background:var(--surface);border-radius:.75rem;padding:1rem;font-size:.82rem;color:var(--muted);line-height:1.7;border:1px solid var(--border);}
-.algo-block strong{color:var(--text);}
+.info-header h2{font-size:1.1rem;font-weight:800;flex:1;}
+.info-hud{
+    display:flex;gap:1rem;align-items:center;
+    background:var(--card);border:1px solid var(--border);border-radius:.75rem;
+    padding:.35rem .9rem;font-size:.8rem;
+}
+.hud-item{display:flex;align-items:center;gap:.4rem;}
+.hud-label{color:var(--muted);}
+.hud-val{font-weight:700;}
+.hud-val.green{color:var(--green);}
+.hud-val.red{color:var(--red);}
+.hud-val.yellow{color:#facc15;}
+.health-bar-wrap{
+    width:90px;height:10px;background:var(--border);border-radius:999px;overflow:hidden;
+}
+.health-bar-inner{
+    height:100%;border-radius:999px;transition:width .2s;
+}
+.health-bar-inner.green{background:var(--green);box-shadow:0 0 6px var(--green);}
+.health-bar-inner.red{background:var(--red);box-shadow:0 0 6px var(--red);}
+.health-bar-inner.blue{background:#3b82f6;box-shadow:0 0 6px #3b82f6;}
+
+#arc-levelup-overlay{
+    position:absolute;inset:0;background:rgba(8,12,20,0.85);z-index:20;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    transition:opacity .2s;backdrop-filter:blur(4px);
+}
+#arc-levelup-overlay.hidden{opacity:0;pointer-events:none;}
+.powerup-cards{display:flex;gap:1.25rem;margin-top:1.5rem;flex-wrap:wrap;justify-content:center;max-width:640px;}
+.powerup-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:1rem;
+    padding:1.5rem 1rem;width:170px;text-align:center;cursor:pointer;
+    transition:transform .2s,border-color .2s,box-shadow .2s;
+}
+.powerup-card:hover{transform:translateY(-8px);border-color:var(--accent);box-shadow:0 12px 30px rgba(99,102,241,.3);}
+.powerup-card .icon{font-size:2.5rem;margin-bottom:.75rem;display:block;}
+.powerup-card h3{font-size:1.05rem;font-weight:700;margin-bottom:.4rem;color:var(--text);}
+.powerup-card p{font-size:.8rem;color:var(--muted);line-height:1.4;}
+
+#arcadeCanvas{display:block;cursor:crosshair;flex:1;width:100%;}
+.controls-hint{
+    font-size:.72rem;color:var(--muted);text-align:center;
+    padding:.4rem;background:var(--surface);border-top:1px solid var(--border);
+    flex-shrink:0;
+}
 
 /* ── Shared Buttons ──────────────────────────────────────────────────────── */
 .btn{
@@ -224,14 +262,14 @@ canvas{display:block;}
 
     <div class="menu-cards">
         <div class="menu-card" id="btn-goto-config">
-            <span class="card-icon">🎮</span>
-            <h2>Jugar</h2>
+            <span class="card-icon">🔬</span>
+            <h2>Simular</h2>
             <p>Configura el número de buenos, malos y obstáculos y lanza la simulación.</p>
         </div>
         <div class="menu-card" id="btn-goto-info">
-            <span class="card-icon">🧠</span>
-            <h2>Cómo funciona</h2>
-            <p>Algoritmos de persecución y huida, estrategias de movimiento y reglas del juego.</p>
+            <span class="card-icon">🎮</span>
+            <h2>Jugar</h2>
+            <p>Sobrevive a peligrosas oleadas, gana experiencia, sube de nivel y consigue mejoras.</p>
         </div>
     </div>
 </div>
@@ -241,7 +279,7 @@ canvas{display:block;}
      ══════════════════════════════════════════════════════════════════════════ -->
 <div id="config" class="screen hidden">
     <div class="config-panel">
-        <h2>⚙️ Configurar partida</h2>
+        <h2>⚙️ Configurar simulación</h2>
         <p class="sub">Ajusta los parámetros antes de iniciar la simulación</p>
 
         <div class="param-group">
@@ -317,49 +355,60 @@ canvas{display:block;}
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════════════
-     PANTALLA 4 – INFORMACIÓN
+     PANTALLA 4 – MINI-JUEGO "CÓMO FUNCIONA"
      ══════════════════════════════════════════════════════════════════════════ -->
 <div id="info" class="screen hidden">
-    <div class="info-panel">
-        <h2>🧠 Cómo funciona</h2>
-
-        <div class="info-row">
-            <div class="info-icon">🟢</div>
-            <div>
-                <h3>Buenos — estrategia Huir</h3>
-                <p>En cada tick evalúan las 8 casillas adyacentes (incluyendo diagonales) y se mueven a la que <strong>maximiza</strong> su distancia euclidiana al malo más cercano.</p>
+    <!-- Cabecera con HUD -->
+    <div class="info-header">
+        <button class="btn-back" id="btn-info-back">← Menú</button>
+        <h2>⚔️ ¡Sobrevive!</h2>
+        <!-- Vida y Nivel -->
+        <div class="info-hud">
+            <div class="hud-item">
+                <span class="hud-label">❤️</span>
+                <div class="health-bar-wrap">
+                    <div class="health-bar-inner green" id="arc-player-bar" style="width:100%"></div>
+                </div>
+            </div>
+            <div class="hud-item" style="margin-left:.2rem;">
+                <span class="hud-label">⭐ Nv</span>
+                <span class="hud-val yellow" id="arc-level">1</span>
+            </div>
+            <div class="hud-item" title="Experiencia">
+                <div class="health-bar-wrap" style="width:50px;">
+                    <div class="health-bar-inner blue" id="arc-xp-bar" style="width:0%"></div>
+                </div>
             </div>
         </div>
-        <div class="info-row">
-            <div class="info-icon">🔴</div>
-            <div>
-                <h3>Malos — estrategia Perseguir</h3>
-                <p>Evalúan las 8 casillas adyacentes y se mueven a la que <strong>minimiza</strong> su distancia euclidiana al bueno más cercano.</p>
+        <!-- Oleada y puntos -->
+        <div class="info-hud">
+            <div class="hud-item">
+                <span class="hud-label">🌊 Ole</span>
+                <span class="hud-val yellow" id="arc-wave">1</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">⭐ Pts</span>
+                <span class="hud-val green" id="arc-score">0</span>
             </div>
         </div>
-        <div class="info-row">
-            <div class="info-icon">⬛</div>
-            <div>
-                <h3>Obstáculos</h3>
-                <p>Casillas bloqueadas. Ningún personaje puede ocuparlas ni atravesarlas.</p>
-            </div>
-        </div>
-
-        <hr class="info-divider" />
-
-        <div class="algo-block">
-            <strong>Algoritmo de movimiento (ambas estrategias):</strong><br/>
-            1. Iterar las 8 posiciones adyacentes<br/>
-            2. Filtrar posiciones fuera del mapa, obstáculos y aliados<br/>
-            3. Calcular distancia euclídea: <em>d = √[(Δx)² + (Δy)²]</em><br/>
-            4. Escoger la posición que max/min imiza d<br/>
-            5. Si no hay movimiento válido → el personaje se queda quieto
-        </div>
-
-        <div style="margin-top:1.5rem;text-align:center;">
-            <button class="btn btn-primary" id="btn-info-back" style="min-width:160px;">← Volver al menú</button>
-        </div>
+        <button class="btn btn-secondary" id="arc-restart" style="font-size:.8rem;padding:.4rem .8rem;">🔄 Reiniciar</button>
     </div>
+
+    <div id="arc-wrapper" style="position:relative;flex:1;display:flex;flex-direction:column;width:100%;">
+        <!-- Level Up Overlay -->
+        <div id="arc-levelup-overlay" class="hidden">
+            <div class="info-panel" style="background:transparent;border:none;box-shadow:none;">
+                <h2 style="text-align:center;font-size:2.2rem;margin-bottom:.5rem;">✨ ¡Nivel <span id="arc-lvl-display">2</span>!</h2>
+                <p style="text-align:center;color:var(--muted);font-size:1.1rem;">Selecciona una mejora de poder</p>
+                <div class="powerup-cards" id="powerup-container"></div>
+            </div>
+        </div>
+        <!-- Canvas del mini-juego -->
+        <canvas id="arcadeCanvas"></canvas>
+    </div>
+
+    <!-- Pista de controles -->
+    <div class="controls-hint">🕹️ WASD / Flechas para mover &nbsp;|&nbsp; 🖱️ Click para disparar &nbsp;|&nbsp; ❤️ Los enemigos te dañan al tocarte</div>
 </div>
 
 <script>
@@ -401,12 +450,14 @@ function showScreen(name, direction='right'){
             s.classList.add('hidden');
         }
     });
+    if(name==='info') arcadeStart();
+    else arcadeStop();
 }
 
 document.getElementById('btn-goto-config').addEventListener('click',()=>showScreen('config'));
 document.getElementById('btn-goto-info')  .addEventListener('click',()=>showScreen('info'));
 document.getElementById('btn-config-back').addEventListener('click',()=>showScreen('menu','left'));
-document.getElementById('btn-info-back')  .addEventListener('click',()=>showScreen('menu','left'));
+document.getElementById('btn-info-back')  .addEventListener('click',()=>{arcadeStop();showScreen('menu','left');});
 document.getElementById('btn-game-back')  .addEventListener('click',()=>{stopGame(); showScreen('menu','left');});
 
 // ── Sliders de configuración ──────────────────────────────────────────────────
@@ -645,6 +696,804 @@ function gameOver(){
     ctx.fillText(`Supervivieron ${tick} ticks`,canvas.width/2,canvas.height/2+CELL*2);
     ctx.fillText('Pulsa 🔄 para reiniciar',canvas.width/2,canvas.height/2+CELL*4);
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MINI-JUEGO ARCADE – pantalla "Cómo funciona"
+// ══════════════════════════════════════════════════════════════════════════════
+(function(){
+
+const arcCanvas = document.getElementById('arcadeCanvas');
+const arcCtx    = arcCanvas.getContext('2d');
+
+// ── Tamaños dinámicos ─────────────────────────────────────────────────────────
+function resizeArcCanvas(){
+    const infoEl = document.getElementById('info');
+    const header = infoEl.querySelector('.info-header');
+    const hint   = infoEl.querySelector('.controls-hint');
+    const hh = header ? header.offsetHeight : 60;
+    const ch = hint   ? hint.offsetHeight   : 28;
+    arcCanvas.width  = window.innerWidth;
+    arcCanvas.height = Math.max(window.innerHeight - hh - ch, 300);
+}
+
+// ── Estado del juego ──────────────────────────────────────────────────────────
+const PLAYER_RADIUS  = 18;
+const ENEMY_RADIUS   = 14;
+const BULLET_RADIUS  = 6;
+const PLAYER_SPEED   = 2.3; // Aún más lenta
+const BULLET_SPEED   = 9;
+const ENEMY_BASE_SPEED = 1.0;
+const PLAYER_MAX_HP  = 100;
+const ENEMY_MAX_HP   = 30;
+const DAMAGE_PER_HIT = 20;
+
+const POWERUPS = [
+    {id:'dmg', icon:'💥', title:'Munición Pesada', desc:'+15 Daño por bala', apply:()=>player.damage+=15},
+    {id:'spd', icon:'⚡', title:'Agilidad', desc:'+25% Velocidad de mov.', apply:()=>player.speedMult+=0.25},
+    {id:'fire', icon:'🔥', title:'Fuego Rápido', desc:'Dispara un 30% más rápido', apply:()=>player.fireRateMult*=0.7},
+    {id:'hp',  icon:'❤️', title:'Vitalidad', desc:'+50 Vida Máx y curación total', apply:()=>{player.maxHp+=50;player.hp=player.maxHp;}},
+    {id:'multi',icon:'🔫', title:'Multidisparo', desc:'Dispara una bala extra a la vez', apply:()=>player.multiShot+=1},
+    {id:'pierce',icon:'👻', title:'Perforación', desc:'Las balas atraviesan +1 enemigo', apply:()=>player.pierce+=1},
+    {id:'vamp', icon:'🧛', title:'Vampirismo', desc:'Cura 2 HP por cada enemigo', apply:()=>player.vampirism+=2},
+    {id:'magnet', icon:'🧲', title:'Magnetismo', desc:'Atrae la Experiencia desde más lejos', apply:()=>player.magnetRadius+=80},
+    {id:'tank', icon:'🛡️', title:'Piel de Piedra', desc:'Ganas +25 Vida Máx y tus balas hacen +10 Daño', apply:()=>{player.maxHp+=25; player.hp+=25; player.damage+=10;}},
+];
+
+let arcState; // 'playing' | 'dead' | 'waveclear' | 'stopped' | 'levelup'
+let player, bullets, enemyBullets, enemies, xpGems, particles, wave, score;
+let superBossWarning = 0;
+let isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+let joystick = { active: false, id: null, originX: 0, originY: 0, x: 0, y: 0, curX: 0, curY: 0 };
+let keys = {};
+let mouseX = 0, mouseY = 0;
+let arcRAF = null;
+let lastTime = 0;
+let waveDelay = 0; 
+let flashAlpha = 0; 
+let level = 1, xp = 0, maxXp = 100;
+
+// HUD elements
+const elPlayerBar = document.getElementById('arc-player-bar');
+const elLevel     = document.getElementById('arc-level');
+const elXpBar     = document.getElementById('arc-xp-bar');
+const elWave      = document.getElementById('arc-wave');
+const elScore     = document.getElementById('arc-score');
+const elLvlOverlay= document.getElementById('arc-levelup-overlay');
+const elLvlDisplay= document.getElementById('arc-lvl-display');
+const elPwrUpCont = document.getElementById('powerup-container');
+
+// ── Drop XP & LevelUp ──────────────────────────────────────────────────────────
+function dropXp(x, y, amount){
+    xpGems.push({x, y, amount, life: 12000});
+}
+function addXp(amount){
+    xp += amount;
+    if(xp >= maxXp){
+        xp -= maxXp;
+        level++;
+        maxXp = Math.floor(maxXp * 1.8); // Curva de nivel mucho más exigente
+        triggerLevelUp();
+    }
+}
+function triggerLevelUp(){
+    arcState = 'levelup';
+    elLvlDisplay.textContent = level;
+    elLvlOverlay.classList.remove('hidden');
+    elPwrUpCont.innerHTML = '';
+    
+    // Pick 3 random powerups
+    const shuffled = [...POWERUPS].sort(()=>0.5-Math.random());
+    const choices = shuffled.slice(0, 3);
+    choices.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'powerup-card';
+        div.innerHTML = `<span class="icon">${p.icon}</span><h3>${p.title}</h3><p>${p.desc}</p>`;
+        div.onclick = () => {
+            p.apply();
+            elLvlOverlay.classList.add('hidden');
+            arcState = 'playing';
+            updateHUD();
+            keys = {}; // resetear teclas para evitar quedarse atascado
+        };
+        elPwrUpCont.appendChild(div);
+    });
+}
+
+// ── Partículas visuales ───────────────────────────────────────────────────────
+function makeParticle(x, y, color){
+    const angle = Math.random()*Math.PI*2;
+    const speed = 1+Math.random()*4;
+    return {
+        x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed,
+        life: 1, decay: 0.04+Math.random()*0.04, r: 2+Math.random()*4, color
+    };
+}
+
+// ── Inicialización ────────────────────────────────────────────────────────────
+function arcadeInit(){
+    resizeArcCanvas();
+    player = {
+        x: arcCanvas.width  / 2, y: arcCanvas.height / 2,
+        hp: PLAYER_MAX_HP, maxHp: PLAYER_MAX_HP, invincible: 0, angle: 0,
+        damage: 10, speedMult: 1.0, multiShot: 0, pierce: 0, vampirism: 0,
+        shootCooldown: 0, fireRateMult: 1.0, magnetRadius: 120
+    };
+    bullets   = [];
+    enemyBullets = [];
+    enemies   = [];
+    xpGems    = [];
+    particles = [];
+    wave      = 1;
+    score     = 0;
+    level     = 1; xp = 0; maxXp = 100;
+    arcState  = 'playing';
+    waveDelay = 0; flashAlpha = 0; superBossWarning = 0;
+    elLvlOverlay.classList.add('hidden');
+    spawnWave(wave);
+    updateHUD();
+}
+
+function spawnWave(w){
+    // Escalado de dificultad mayor
+    let count = 4 + Math.floor(w * 2.5);
+    let hasSuperBoss = (w % 15 === 0);
+    let hasBoss = (!hasSuperBoss && w % 10 === 0);
+    let hasMiniBoss = (!hasSuperBoss && !hasBoss && w % 5 === 0);
+
+    if(hasSuperBoss) { count = Math.max(1, Math.floor(count * 0.2)); superBossWarning = 3000; }
+    else if(hasBoss) count = Math.max(2, Math.floor(count * 0.4));
+
+    // Desoves especiales dependientes de subtipos aleatorios (comportamientos únicos)
+    if(hasSuperBoss){
+        let st = Math.random() > 0.5 ? 'bullet_hell' : 'berserker';
+        enemies.push({
+            id: Math.random(),
+            x: arcCanvas.width/2, y: 50,
+            hp: ENEMY_MAX_HP * 35 + w * 60, maxHp: ENEMY_MAX_HP * 35 + w * 60,
+            speed: ENEMY_BASE_SPEED * 1.3 + w * 0.02, angle: 0,
+            type: 'superboss', subType: st, r: 60, dmg: 50, xpDrop: 1000, color: '#f43f5e',
+            cooldown: 0, phaseTimer: 0, dash: 0
+        });
+    } else if(hasBoss){
+        let st = Math.random() > 0.5 ? 'summoner' : 'spread_shooter';
+        enemies.push({
+            id: Math.random(),
+            x: arcCanvas.width/2, y: 50,
+            hp: ENEMY_MAX_HP * 15 + w * 40, maxHp: ENEMY_MAX_HP * 15 + w * 40,
+            speed: ENEMY_BASE_SPEED * 1.1 + w * 0.02, angle: 0,
+            type: 'boss', subType: st, r: 35, dmg: 40, xpDrop: 400, color: '#a855f7',
+            cooldown: 0, phaseTimer: 0, dash: 0
+        });
+    } else if(hasMiniBoss){
+        let st = Math.random() > 0.5 ? 'charger' : 'twin_shooter';
+        enemies.push({
+            id: Math.random(),
+            x: Math.random()>0.5 ? 40 : arcCanvas.width-40, y: arcCanvas.height/2,
+            hp: ENEMY_MAX_HP * 5 + w * 20, maxHp: ENEMY_MAX_HP * 5 + w * 20,
+            speed: ENEMY_BASE_SPEED * 0.9 + w * 0.02, angle: 0,
+            type: 'miniboss', subType: st, r: 24, dmg: 30, xpDrop: 150, color: '#eab308',
+            cooldown: 0, phaseTimer: 0, dash: 0
+        });
+    }
+
+    // Probabilidades de enemigos especiales avanzadas (a partir de la oleada 2-3)
+    const probRunner = Math.min(0.4, w * 0.03); 
+    const probShooter = Math.min(0.3, w * 0.02);
+
+    for(let i = 0; i < count; i++){
+        let ex, ey;
+        const side = Math.floor(Math.random()*4);
+        const pad = ENEMY_RADIUS + 5;
+        if(side===0){ex=Math.random()*arcCanvas.width; ey=pad;}
+        else if(side===1){ex=arcCanvas.width-pad; ey=Math.random()*arcCanvas.height;}
+        else if(side===2){ex=Math.random()*arcCanvas.width; ey=arcCanvas.height-pad;}
+        else{ex=pad; ey=Math.random()*arcCanvas.height;}
+
+        const rnd = Math.random();
+        if(rnd < probShooter && w >= 3){
+            // Shooter: Se mantiene a distancia y dispara
+            enemies.push({
+                id: Math.random(),
+                x: ex, y: ey,
+                hp: ENEMY_MAX_HP*0.8 + w*3, maxHp: ENEMY_MAX_HP*0.8 + w*3,
+                speed: ENEMY_BASE_SPEED * 0.7 + w*0.05, angle: 0,
+                type: 'shooter', r: ENEMY_RADIUS, dmg: DAMAGE_PER_HIT, xpDrop: 20+w*4, color: '#0ea5e9',
+                cooldown: Math.random() * 2000 + 1000
+            });
+        } else if(rnd < probShooter + probRunner && w >= 2) {
+            // Runner: Muy rápido pero frágil
+            enemies.push({
+                id: Math.random(),
+                x: ex, y: ey,
+                hp: ENEMY_MAX_HP*0.5 + w*2, maxHp: ENEMY_MAX_HP*0.5 + w*2,
+                speed: ENEMY_BASE_SPEED * 1.8 + w*0.1, angle: 0,
+                type: 'runner', r: ENEMY_RADIUS*0.75, dmg: DAMAGE_PER_HIT*0.75, xpDrop: 15+w*2, color: '#f97316'
+            });
+        } else {
+            // Normal (Aumentado)
+            enemies.push({
+                id: Math.random(),
+                x: ex, y: ey,
+                hp: ENEMY_MAX_HP + w * 8, maxHp: ENEMY_MAX_HP + w * 8, // más vida
+                speed: ENEMY_BASE_SPEED + w * 0.15, angle: 0, // un poco más rápidos
+                type: 'normal', r: ENEMY_RADIUS, dmg: DAMAGE_PER_HIT + w * 2, xpDrop: 15+w*3, color: '#ef4444' // más daño
+            });
+        }
+    }
+}
+
+// ── Disparo ───────────────────────────────────────────────────────────────────
+function shoot(mx, my){
+    if(arcState !== 'playing') return;
+    if(player.shootCooldown > 0) return; 
+    
+    // El tiempo base sube a 400ms y puede bajar con el multiplicador Fuego Rápido
+    player.shootCooldown = 400 * player.fireRateMult; 
+
+    const dx = mx - player.x, dy = my - player.y;
+    const angle = Math.atan2(dy, dx);
+    const ms = player.multiShot;
+    for(let i=0; i<=ms; i++){
+        const offset = (ms === 0) ? 0 : (i - ms/2) * 0.15;
+        const a = angle + offset;
+        bullets.push({
+            x: player.x, y: player.y,
+            vx: Math.cos(a)*BULLET_SPEED, vy: Math.sin(a)*BULLET_SPEED,
+            pierce: player.pierce || 0, hitList: []
+        });
+    }
+}
+
+// Interfaz para disparar hacia un ángulo concreto (usado en Auto-Aim mobile)
+function shootAngle(angle){
+    if(arcState !== 'playing') return;
+    if(player.shootCooldown > 0) return; 
+    
+    player.shootCooldown = 400 * player.fireRateMult; 
+    
+    const ms = player.multiShot;
+    for(let i=0; i<=ms; i++){
+        const offset = (ms === 0) ? 0 : (i - ms/2) * 0.15;
+        const a = angle + offset;
+        bullets.push({
+            x: player.x, y: player.y,
+            vx: Math.cos(a)*BULLET_SPEED, vy: Math.sin(a)*BULLET_SPEED,
+            pierce: player.pierce || 0, hitList: []
+        });
+    }
+}
+
+// ── Actualización ─────────────────────────────────────────────────────────────
+function arcadeUpdate(dt){
+    if(arcState === 'dead' || arcState === 'stopped' || arcState === 'levelup') return;
+
+    if(arcState === 'waveclear'){
+        waveDelay -= dt;
+        if(waveDelay <= 0){
+            wave++;
+            spawnWave(wave);
+            arcState = 'playing';
+        }
+        return;
+    }
+
+    const factor = dt / (1000/60);
+
+    // Mover XP
+    xpGems = xpGems.filter(g => {
+        const dx = player.x - g.x, dy = player.y - g.y;
+        const d = Math.sqrt(dx*dx+dy*dy)||1;
+        if(d < PLAYER_RADIUS + 8){
+            addXp(g.amount);
+            return false;
+        }
+        if(d < player.magnetRadius){
+            g.x += (dx/d)*8 * factor;
+            g.y += (dy/d)*8 * factor;
+        }
+        g.life -= dt;
+        return g.life > 0;
+    });
+
+    // Movimiento del jugador
+    let vx=0, vy=0;
+    
+    if(isMobile && joystick.active){
+        let maxDist = 45; // Radio visual del joystick
+        let ang = Math.atan2(joystick.y, joystick.x);
+        let dist = Math.sqrt(joystick.x*joystick.x + joystick.y*joystick.y);
+        let normalizedDist = Math.min(dist, maxDist) / maxDist; // 0.0 a 1.0
+        
+        vx = Math.cos(ang) * normalizedDist;
+        vy = Math.sin(ang) * normalizedDist;
+    } else {
+        if(keys['ArrowLeft']  || keys['a'] || keys['A']) vx -= 1;
+        if(keys['ArrowRight'] || keys['d'] || keys['D']) vx += 1;
+        if(keys['ArrowUp']    || keys['w'] || keys['W']) vy -= 1;
+        if(keys['ArrowDown']  || keys['s'] || keys['S']) vy += 1;
+    }
+    
+    const vlen = Math.sqrt(vx*vx+vy*vy)||1;
+    if(vx!==0||vy!==0){
+        const spd = PLAYER_SPEED * player.speedMult * factor;
+        const moveMult = isMobile ? Math.min(vlen, 1) : 1; // los joystick analogicos pueden no ir al 100% de vel si el dedo no esta estirado
+        player.x = Math.max(PLAYER_RADIUS, Math.min(arcCanvas.width -PLAYER_RADIUS, player.x + (vx/vlen)*spd*moveMult));
+        player.y = Math.max(PLAYER_RADIUS, Math.min(arcCanvas.height-PLAYER_RADIUS, player.y + (vy/vlen)*spd*moveMult));
+    }
+    
+    if(!isMobile) {
+        player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+    } else {
+        // Auto-Aim en móviles
+        if(enemies.length > 0) {
+            let closest = null;
+            let minDist = Infinity;
+            for(const e of enemies){
+                let dx = e.x - player.x, dy = e.y - player.y;
+                let dist = dx*dx+dy*dy;
+                if(dist < minDist){ minDist = dist; closest = e; }
+            }
+            if(closest) {
+                let dx = closest.x - player.x, dy = closest.y - player.y;
+                player.angle = Math.atan2(dy, dx);
+                shootAngle(player.angle);
+            }
+        }
+    }
+
+    // Flash e Invencibilidad
+    if(flashAlpha > 0) flashAlpha -= dt * 0.003;
+    if(flashAlpha < 0) flashAlpha = 0;
+    if(player.invincible > 0) player.invincible -= dt;
+    if(player.shootCooldown > 0) player.shootCooldown -= dt;
+
+    // Mover balas del jugador
+    bullets = bullets.filter(b=>{
+        b.x += b.vx * factor;
+        b.y += b.vy * factor;
+        return b.x > 0 && b.x < arcCanvas.width && b.y > 0 && b.y < arcCanvas.height;
+    });
+
+    // Mover balas enemigas
+    enemyBullets = enemyBullets.filter(eb=>{
+        eb.x += eb.vx * factor;
+        eb.y += eb.vy * factor;
+        
+        // Colision de bala enemiga con jugador
+        if(player.invincible <= 0){
+            const dx = player.x - eb.x, dy = player.y - eb.y;
+            if(dx*dx+dy*dy < (PLAYER_RADIUS+eb.r)**2){
+                player.hp -= eb.dmg;
+                player.invincible = 800;
+                flashAlpha = 0.55;
+                for(let k=0;k<8;k++) particles.push(makeParticle(player.x, player.y, '#ef4444'));
+                if(player.hp <= 0){
+                    player.hp = 0;
+                    arcState = 'dead';
+                }
+                return false; // se destruye la bala
+            }
+        }
+        return eb.x > 0 && eb.x < arcCanvas.width && eb.y > 0 && eb.y < arcCanvas.height;
+    });
+
+    if(superBossWarning > 0) superBossWarning -= dt;
+
+    // Comportamiento de Enemigos
+    for(const e of enemies){
+        const dx = player.x - e.x, dy = player.y - e.y;
+        const len = Math.sqrt(dx*dx+dy*dy)||1;
+        let spd = e.speed * factor;
+        
+        if(e.type === 'shooter'){
+            if(len < 180){
+                spd = -spd * 0.5;
+            } else if(len < 220){
+                spd = 0;
+            }
+            e.cooldown -= dt;
+            if(e.cooldown <= 0 && len < 400){
+                e.cooldown = 1800 + Math.random()*1000;
+                enemyBullets.push({
+                    x: e.x, y: e.y, r: 5, dmg: Math.floor(e.dmg*0.6),
+                    vx: (dx/len) * (BULLET_SPEED*0.55),
+                    vy: (dy/len) * (BULLET_SPEED*0.55)
+                });
+            }
+            e.x += (dx/len)*spd; e.y += (dy/len)*spd;
+        } else if (e.type === 'miniboss') {
+            if (e.subType === 'charger') {
+                e.cooldown -= dt;
+                if (e.cooldown <= 0) {
+                    if (len < 300) { e.cooldown = 2000; e.dash = 400; e.dashVx = (dx/len); e.dashVy = (dy/len); }
+                    else { e.cooldown = 1000; }
+                }
+                if (e.dash > 0) { e.dash -= dt; e.x += e.dashVx * (spd * 3.5); e.y += e.dashVy * (spd * 3.5); }
+                else { e.x += (dx/len)*spd; e.y += (dy/len)*spd; }
+            } else { // twin_shooter
+                e.cooldown -= dt;
+                if (e.cooldown <= 0 && len < 400) {
+                    e.cooldown = 1500;
+                    for(let k=-1; k<=1; k+=2) {
+                        let a = Math.atan2(dy, dx) + k*0.3;
+                        enemyBullets.push({ x: e.x, y: e.y, r: 5, dmg: Math.floor(e.dmg*0.6), vx: Math.cos(a)*BULLET_SPEED*0.6, vy: Math.sin(a)*BULLET_SPEED*0.6 });
+                    }
+                }
+                if(len < 150) spd = -spd * 0.5; else if(len < 250) spd = 0;
+                e.x += (dx/len)*spd; e.y += (dy/len)*spd;
+            }
+        } else if (e.type === 'boss') {
+            if (e.subType === 'summoner') {
+                e.cooldown -= dt;
+                if (e.cooldown <= 0) {
+                    e.cooldown = 3000;
+                    for(let k=0; k<2; k++) {
+                        enemies.push({ id: Math.random(), x: e.x + (Math.random()*40-20), y: e.y + (Math.random()*40-20), hp: ENEMY_MAX_HP + wave*2, maxHp: ENEMY_MAX_HP + wave*2, speed: ENEMY_BASE_SPEED + wave*0.1, angle: 0, type: 'normal', r: ENEMY_RADIUS-2, dmg: DAMAGE_PER_HIT*0.5, xpDrop: 5, color: '#ec4899' });
+                    }
+                }
+                e.x += (dx/len)*spd; e.y += (dy/len)*spd;
+            } else { // spread_shooter
+                e.cooldown -= dt;
+                if (e.cooldown <= 0) {
+                    e.cooldown = 2000;
+                    for(let k=0; k<8; k++) {
+                        let a = e.angle + (Math.PI/4)*k;
+                        enemyBullets.push({ x: e.x, y: e.y, r: 6, dmg: Math.floor(e.dmg*0.5), vx: Math.cos(a)*BULLET_SPEED*0.5, vy: Math.sin(a)*BULLET_SPEED*0.5 });
+                    }
+                }
+                e.x += (dx/len)*spd*0.5; e.y += (dy/len)*spd*0.5;
+            }
+        } else if (e.type === 'superboss') {
+            if (e.subType === 'bullet_hell') {
+                e.cooldown -= dt;
+                e.phaseTimer += dt * 0.002;
+                if (e.cooldown <= 0) {
+                    e.cooldown = 400; // fires constantly
+                    let a = e.phaseTimer;
+                    for(let k=0; k<4; k++) {
+                        let ta = a + (Math.PI/2)*k;
+                        enemyBullets.push({ x: e.x, y: e.y, r: 7, dmg: Math.floor(e.dmg*0.4), vx: Math.cos(ta)*BULLET_SPEED*0.4, vy: Math.sin(ta)*BULLET_SPEED*0.4 });
+                    }
+                }
+                e.x += (dx/len)*spd*0.3; e.y += (dy/len)*spd*0.3;
+            } else { // berserker
+                e.cooldown -= dt;
+                if (e.cooldown <= 0) {
+                    if (len < 500) { e.cooldown = 1500; e.dash = 600; e.dashVx = (dx/len); e.dashVy = (dy/len); }
+                    else { e.cooldown = 1000; }
+                }
+                if (e.dash > 0) {
+                    e.dash -= dt; e.x += e.dashVx * (spd * 3.5); e.y += e.dashVy * (spd * 3.5);
+                    if(Math.random()<0.3) enemyBullets.push({ x: e.x, y: e.y, r: 4, dmg: Math.floor(e.dmg*0.3), vx: (Math.random() - 0.5)*4, vy: (Math.random() - 0.5)*4 }); 
+                }
+                else { e.x += (dx/len)*spd*1.5; e.y += (dy/len)*spd*1.5; }
+            }
+        } else {
+            e.x += (dx/len)*spd;
+            e.y += (dy/len)*spd;
+        }
+        
+        e.angle = Math.atan2(dy, dx);
+    }
+
+    // Colisión balas-enemigos
+    for(let i = bullets.length-1; i >= 0; i--){
+        const b = bullets[i];
+        for(let j = enemies.length-1; j >= 0; j--){
+            const e = enemies[j];
+            if(b.hitList.includes(e.id)) continue;
+            const dx = b.x - e.x, dy = b.y - e.y;
+            if(dx*dx+dy*dy < (BULLET_RADIUS+e.r)**2){
+                e.hp -= player.damage;
+                b.hitList.push(e.id);
+                for(let k=0;k<4;k++) particles.push(makeParticle(e.x, e.y, e.color));
+                
+                if(e.hp <= 0){
+                    score += 10 * wave * (e.type==='boss'?10:e.type==='miniboss'?3:1);
+                    if(player.vampirism) player.hp = Math.min(player.maxHp, player.hp + player.vampirism);
+                    dropXp(e.x, e.y, e.xpDrop);
+                    for(let k=0;k<12;k++) particles.push(makeParticle(e.x, e.y, '#facc15'));
+                    enemies.splice(j,1);
+                }
+                if(b.pierce <= 0){
+                    bullets.splice(i,1);
+                    break;
+                } else {
+                    b.pierce--;
+                }
+            }
+        }
+    }
+
+    // Colisión enemigos-jugador
+    if(player.invincible <= 0){
+        for(let j = enemies.length-1; j >= 0; j--){
+            const e = enemies[j];
+            const dx = player.x - e.x, dy = player.y - e.y;
+            if(dx*dx+dy*dy < (PLAYER_RADIUS+e.r-4)**2){
+                player.hp -= e.dmg;
+                player.invincible = 800; // 800ms
+                flashAlpha = 0.55;
+                for(let k=0;k<8;k++) particles.push(makeParticle(player.x, player.y, '#ef4444'));
+                if(player.hp <= 0){
+                    player.hp = 0;
+                    arcState = 'dead';
+                }
+                break;
+            }
+        }
+    }
+
+    // Actualizar partículas
+    particles = particles.filter(p=>{
+        p.x += p.vx; p.y += p.vy;
+        p.life -= p.decay;
+        return p.life > 0;
+    });
+
+    if(enemies.length === 0 && arcState === 'playing'){
+        arcState = 'waveclear';
+        waveDelay = 2500; // ms
+    }
+
+    updateHUD();
+}
+
+function updateHUD(){
+    const pct = Math.max(0,player.hp / player.maxHp * 100);
+    elPlayerBar.style.width = pct + '%';
+    elWave.textContent      = wave;
+    elScore.textContent     = score;
+    elLevel.textContent     = level;
+    elXpBar.style.width     = Math.min(100, (xp/maxXp)*100) + '%';
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function arcadeRender(){
+    const W = arcCanvas.width, H = arcCanvas.height;
+    arcCtx.clearRect(0,0,W,H);
+
+    // Fondo cuadriculado
+    arcCtx.fillStyle='#080c14';
+    arcCtx.fillRect(0,0,W,H);
+    arcCtx.strokeStyle='#111827';arcCtx.lineWidth=.5;
+    const G=40;
+    for(let x=0;x<W;x+=G){arcCtx.beginPath();arcCtx.moveTo(x,0);arcCtx.lineTo(x,H);arcCtx.stroke();}
+    for(let y=0;y<H;y+=G){arcCtx.beginPath();arcCtx.moveTo(0,y);arcCtx.lineTo(W,y);arcCtx.stroke();}
+
+    // XP Gems
+    for(const g of xpGems){
+        arcCtx.shadowColor='#3b82f6';arcCtx.shadowBlur=8;
+        arcCtx.fillStyle='#60a5fa';
+        arcCtx.beginPath(); arcCtx.arc(g.x, g.y, 4.5, 0, Math.PI*2); arcCtx.fill();
+    }
+    arcCtx.shadowBlur=0;
+
+    // Partículas
+    for(const p of particles){
+        arcCtx.globalAlpha = p.life;
+        arcCtx.fillStyle   = p.color;
+        arcCtx.beginPath();
+        arcCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        arcCtx.fill();
+    }
+    arcCtx.globalAlpha = 1;
+
+    // Balas
+    for(const b of bullets){
+        arcCtx.shadowColor='#818cf8';arcCtx.shadowBlur=10;
+        arcCtx.fillStyle='#a5b4fc';
+        arcCtx.beginPath();
+        arcCtx.arc(b.x, b.y, BULLET_RADIUS, 0, Math.PI*2);
+        arcCtx.fill();
+    }
+    arcCtx.shadowBlur=0;
+
+    // Enemigos
+    for(const e of enemies){
+        // Cuerpo
+        arcCtx.shadowColor=e.color;arcCtx.shadowBlur=12;
+        arcCtx.fillStyle=e.color;
+        arcCtx.beginPath();
+        arcCtx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+        arcCtx.fill();
+        // Ojo/dirección
+        arcCtx.shadowBlur=0;
+        arcCtx.fillStyle='#fff';
+        const eyeX = e.x + Math.cos(e.angle)*e.r*0.5;
+        const eyeY = e.y + Math.sin(e.angle)*e.r*0.5;
+        arcCtx.beginPath();arcCtx.arc(eyeX, eyeY, e.r*0.3, 0, Math.PI*2);arcCtx.fill();
+        // Barra de vida del enemigo
+        const bw = e.r*2;
+        const bh = 4;
+        const bx = e.x - e.r;
+        const by = e.y - e.r - 8;
+        arcCtx.fillStyle='#374151';
+        arcCtx.fillRect(bx, by, bw, bh);
+        arcCtx.fillStyle='#ef4444';
+        arcCtx.fillRect(bx, by, bw*(Math.max(0,e.hp)/e.maxHp), bh);
+    }
+    arcCtx.shadowBlur=0;
+
+    // Balas enemigas
+    for(const eb of enemyBullets){
+        arcCtx.shadowColor='#f43f5e';arcCtx.shadowBlur=8;
+        arcCtx.fillStyle='#fb7185';
+        arcCtx.beginPath();
+        arcCtx.arc(eb.x, eb.y, eb.r, 0, Math.PI*2);
+        arcCtx.fill();
+    }
+    arcCtx.shadowBlur=0;
+
+    // Jugador
+    const isInv = player.invincible > 0;
+    if(!isInv || Math.floor(Date.now()/80)%2===0){
+        arcCtx.shadowColor='#22c55e';arcCtx.shadowBlur=18;
+        arcCtx.fillStyle='#22c55e';
+        arcCtx.beginPath();
+        arcCtx.arc(player.x, player.y, PLAYER_RADIUS, 0, Math.PI*2);
+        arcCtx.fill();
+        // Cañon (apunta al ratón)
+        arcCtx.shadowBlur=0;
+        arcCtx.strokeStyle='#86efac';arcCtx.lineWidth=4;arcCtx.lineCap='round';
+        arcCtx.beginPath();
+        arcCtx.moveTo(player.x, player.y);
+        arcCtx.lineTo(
+            player.x + Math.cos(player.angle)*PLAYER_RADIUS*1.5,
+            player.y + Math.sin(player.angle)*PLAYER_RADIUS*1.5
+        );
+        arcCtx.stroke();
+        // Ojo/punto central
+        arcCtx.fillStyle='rgba(255,255,255,.8)';
+        arcCtx.beginPath();arcCtx.arc(player.x, player.y, 5, 0, Math.PI*2);arcCtx.fill();
+    }
+    arcCtx.shadowBlur=0;
+
+    // Flash rojo al recibir daño
+    if(flashAlpha > 0){
+        arcCtx.fillStyle=`rgba(239,68,68,${flashAlpha})`;
+        arcCtx.fillRect(0,0,W,H);
+    }
+
+    // ── Pantallas de estado ────────────────────────────────────────────────
+    if(arcState === 'waveclear'){
+        arcCtx.fillStyle='rgba(0,0,0,.45)';
+        arcCtx.fillRect(0,0,W,H);
+        arcCtx.shadowColor='#22c55e';arcCtx.shadowBlur=30;
+        arcCtx.fillStyle='#22c55e';
+        arcCtx.font='bold 42px Inter,sans-serif';arcCtx.textAlign='center';
+        arcCtx.fillText(`¡Oleada ${wave} superada!`, W/2, H/2-20);
+        arcCtx.shadowBlur=0;
+        arcCtx.fillStyle='#94a3b8';
+        arcCtx.font='20px Inter,sans-serif';
+        arcCtx.fillText(`Oleada ${wave+1} comenzará en breve…`, W/2, H/2+24);
+    }
+
+    if(arcState === 'dead'){
+        arcCtx.fillStyle='rgba(0,0,0,.6)';
+        arcCtx.fillRect(0,0,W,H);
+        arcCtx.shadowColor='#ef4444';arcCtx.shadowBlur=30;
+        arcCtx.fillStyle='#ef4444';
+        arcCtx.font='bold 48px Inter,sans-serif';arcCtx.textAlign='center';
+        arcCtx.fillText('¡Has muerto!', W/2, H/2-30);
+        arcCtx.shadowBlur=0;
+        arcCtx.fillStyle='#94a3b8';
+        arcCtx.font='22px Inter,sans-serif';
+        arcCtx.fillText(`Puntuación: ${score}  |  Oleada: ${wave}`, W/2, H/2+16);
+        arcCtx.font='16px Inter,sans-serif';
+        arcCtx.fillText('Pulsa 🔄 Reiniciar para volver a jugar', W/2, H/2+52);
+    }
+}
+
+// ── Loop principal ────────────────────────────────────────────────────────────
+function arcadeLoop(ts){
+    const dt = ts - lastTime;
+    lastTime = ts;
+    arcadeUpdate(Math.min(dt, 100)); // cap para no saltar frames largos
+    arcadeRender();
+    arcRAF = requestAnimationFrame(arcadeLoop);
+}
+
+function arcadeStart(){
+    if(arcRAF) return;
+    arcadeInit();
+    lastTime = performance.now();
+    arcRAF = requestAnimationFrame(arcadeLoop);
+}
+
+function arcadeStop(){
+    if(arcRAF){ cancelAnimationFrame(arcRAF); arcRAF=null; }
+}
+window.arcadeStop = arcadeStop;
+window.arcadeStart = arcadeStart;
+
+// ── Controles de teclado ──────────────────────────────────────────────────────
+window.addEventListener('keydown', e=>{ keys[e.key]=true; });
+window.addEventListener('keyup',   e=>{ keys[e.key]=false; });
+
+// ── Ratón ─────────────────────────────────────────────────────────────────────
+arcCanvas.addEventListener('mousemove', e=>{
+    if(isMobile) return;
+    const r = arcCanvas.getBoundingClientRect();
+    mouseX = e.clientX - r.left;
+    mouseY = e.clientY - r.top;
+});
+arcCanvas.addEventListener('mousedown', e=>{
+    if(isMobile) return;
+    const r = arcCanvas.getBoundingClientRect();
+    shoot(e.clientX - r.left, e.clientY - r.top);
+});
+
+// ── Eventos Táctiles (Joystick móvil) ──────────────────────────────────────────
+arcCanvas.addEventListener('touchstart', e => {
+    if(!isMobile) return;
+    if(e.cancelable) e.preventDefault(); 
+    for(let i=0; i<e.changedTouches.length; i++){
+        let t = e.changedTouches[i];
+        if(!joystick.active) {
+            const r = arcCanvas.getBoundingClientRect();
+            joystick.active = true;
+            joystick.id = t.identifier;
+            joystick.originX = t.clientX - r.left;
+            joystick.originY = t.clientY - r.top;
+            joystick.curX = joystick.originX;
+            joystick.curY = joystick.originY;
+            joystick.x = 0;
+            joystick.y = 0;
+        }
+    }
+}, {passive: false});
+
+arcCanvas.addEventListener('touchmove', e => {
+    if(!isMobile || !joystick.active) return;
+    if(e.cancelable) e.preventDefault();
+    for(let i=0; i<e.changedTouches.length; i++){
+        let t = e.changedTouches[i];
+        if(t.identifier === joystick.id) {
+            const r = arcCanvas.getBoundingClientRect();
+            joystick.curX = t.clientX - r.left;
+            joystick.curY = t.clientY - r.top;
+            joystick.x = joystick.curX - joystick.originX;
+            joystick.y = joystick.curY - joystick.originY;
+        }
+    }
+}, {passive: false});
+
+const endTouch = (e) => {
+    if(!isMobile || !joystick.active) return;
+    for(let i=0; i<e.changedTouches.length; i++){
+        let t = e.changedTouches[i];
+        if(t.identifier === joystick.id) {
+            joystick.active = false;
+            joystick.id = null;
+            joystick.x = 0;
+            joystick.y = 0;
+        }
+    }
+};
+arcCanvas.addEventListener('touchend', endTouch);
+arcCanvas.addEventListener('touchcancel', endTouch);
+
+// ── Botón reiniciar ───────────────────────────────────────────────────────────
+document.getElementById('arc-restart').addEventListener('click', ()=>{
+    arcadeStop();
+    arcadeInit();
+    lastTime = performance.now();
+    arcRAF = requestAnimationFrame(arcadeLoop);
+});
+
+// ── Resize ────────────────────────────────────────────────────────────────────
+window.addEventListener('resize', ()=>{
+    if(arcRAF){
+        resizeArcCanvas();
+        if(player){
+            player.x = Math.min(player.x, arcCanvas.width  - PLAYER_RADIUS);
+            player.y = Math.min(player.y, arcCanvas.height - PLAYER_RADIUS);
+        }
+    }
+});
+
+})(); // fin IIFE mini-juego
 </script>
 </body>
 </html>

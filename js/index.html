@@ -739,6 +739,71 @@ const POWERUPS = [
     {id:'tank', icon:'🛡️', title:'Piel de Piedra', desc:'Ganas +25 Vida Máx y tus balas hacen +10 Daño', apply:()=>{player.maxHp+=25; player.hp+=25; player.damage+=10;}},
 ];
 
+// ── Web Audio API (Sfx) ───────────────────────────────────────────────────────
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const Sfx = {
+    play: function(type) {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+        
+        switch(type) {
+            case 'shoot':
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(10, now + 0.1);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+                break;
+            case 'hit':
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.05);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+                break;
+            case 'hurt':
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(30, now + 0.3);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+                break;
+            case 'gem':
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.linearRampToValueAtTime(1200, now + 0.08);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.08);
+                osc.start(now); osc.stop(now + 0.08);
+                break;
+            case 'levelup':
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.setValueAtTime(600, now + 0.1);
+                osc.frequency.setValueAtTime(800, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+                break;
+            case 'death':
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(10, now + 1.5);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.001, now + 1.5);
+                osc.start(now); osc.stop(now + 1.5);
+                break;
+        }
+    }
+};
+
 let arcState; // 'playing' | 'dead' | 'waveclear' | 'stopped' | 'levelup'
 let player, bullets, enemyBullets, enemies, xpGems, particles, wave, score;
 let superBossWarning = 0;
@@ -768,6 +833,7 @@ function dropXp(x, y, amount){
 }
 function addXp(amount){
     xp += amount;
+    Sfx.play('gem');
     if(xp >= maxXp){
         xp -= maxXp;
         level++;
@@ -776,6 +842,7 @@ function addXp(amount){
     }
 }
 function triggerLevelUp(){
+    Sfx.play('levelup');
     arcState = 'levelup';
     elLvlDisplay.textContent = level;
     elLvlOverlay.classList.remove('hidden');
@@ -929,6 +996,7 @@ function shoot(mx, my){
     
     // El tiempo base sube a 400ms y puede bajar con el multiplicador Fuego Rápido
     player.shootCooldown = 400 * player.fireRateMult; 
+    Sfx.play('shoot');
 
     const dx = mx - player.x, dy = my - player.y;
     const angle = Math.atan2(dy, dx);
@@ -950,6 +1018,7 @@ function shootAngle(angle){
     if(player.shootCooldown > 0) return; 
     
     player.shootCooldown = 400 * player.fireRateMult; 
+    Sfx.play('shoot');
     
     const ms = player.multiShot;
     for(let i=0; i<=ms; i++){
@@ -1186,6 +1255,7 @@ function arcadeUpdate(dt){
             if(dx*dx+dy*dy < (BULLET_RADIUS+e.r)**2){
                 e.hp -= player.damage;
                 b.hitList.push(e.id);
+                Sfx.play('hit');
                 for(let k=0;k<4;k++) particles.push(makeParticle(e.x, e.y, e.color));
                 
                 if(e.hp <= 0){
@@ -1214,10 +1284,13 @@ function arcadeUpdate(dt){
                 player.hp -= e.dmg;
                 player.invincible = 800; // 800ms
                 flashAlpha = 0.55;
+                Sfx.play('hurt');
                 for(let k=0;k<8;k++) particles.push(makeParticle(player.x, player.y, '#ef4444'));
                 if(player.hp <= 0){
                     player.hp = 0;
                     arcState = 'dead';
+                    Sfx.play('death');
+                    saveHighScore();
                 }
                 break;
             }
@@ -1370,18 +1443,37 @@ function arcadeRender(){
     }
 
     if(arcState === 'dead'){
-        arcCtx.fillStyle='rgba(0,0,0,.6)';
+        arcCtx.fillStyle='rgba(0,0,0,.85)';
         arcCtx.fillRect(0,0,W,H);
         arcCtx.shadowColor='#ef4444';arcCtx.shadowBlur=30;
         arcCtx.fillStyle='#ef4444';
         arcCtx.font='bold 48px Inter,sans-serif';arcCtx.textAlign='center';
-        arcCtx.fillText('¡Has muerto!', W/2, H/2-30);
+        arcCtx.fillText('¡Has muerto!', W/2, H/3);
         arcCtx.shadowBlur=0;
         arcCtx.fillStyle='#94a3b8';
         arcCtx.font='22px Inter,sans-serif';
-        arcCtx.fillText(`Puntuación: ${score}  |  Oleada: ${wave}`, W/2, H/2+16);
+        arcCtx.fillText(`Puntuación: ${score}  |  Oleada: ${wave}`, W/2, H/3+40);
+        
+        // Cargar Récord Actual
+        const hiStr = localStorage.getItem('survivalArcHighScore');
+        const hiScore = hiStr ? parseInt(hiStr) : 0;
+        
+        arcCtx.fillStyle='#eab308';
+        arcCtx.font='bold 24px Inter,sans-serif';
+        arcCtx.fillText(`👑 Mejor Puntuación: ${Math.max(score, hiScore)} 👑`, W/2, H/3+85);
+        
+        arcCtx.fillStyle='#fff';
         arcCtx.font='16px Inter,sans-serif';
-        arcCtx.fillText('Pulsa 🔄 Reiniciar para volver a jugar', W/2, H/2+52);
+        arcCtx.fillText('Pulsa 🔄 Reiniciar para volver a jugar', W/2, H/3+140);
+    }
+}
+
+// Guarda la puntuación actual si es mayor a la guardada
+function saveHighScore(){
+    const hiStr = localStorage.getItem('survivalArcHighScore');
+    let hiScore = hiStr ? parseInt(hiStr) : 0;
+    if(score > hiScore) {
+        localStorage.setItem('survivalArcHighScore', score.toString());
     }
 }
 

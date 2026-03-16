@@ -1542,6 +1542,8 @@
 
                 if (!isMobile) {
                     player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+                    // Disparo continuo al mantener el ratón pulsado
+                    if (mouseDown) shoot(mouseX, mouseY);
                 } else {
                     // Auto-Aim en móviles
                     if (enemies.length > 0) {
@@ -1954,6 +1956,8 @@
             window.addEventListener('keyup', e => { keys[e.key] = false; });
 
             // ── Ratón ─────────────────────────────────────────────────────────────────────
+            let mouseDown = false;
+
             arcCanvas.addEventListener('mousemove', e => {
                 if (isMobile) return;
                 const r = arcCanvas.getBoundingClientRect();
@@ -1962,9 +1966,12 @@
             });
             arcCanvas.addEventListener('mousedown', e => {
                 if (isMobile) return;
+                mouseDown = true;
                 const r = arcCanvas.getBoundingClientRect();
                 shoot(e.clientX - r.left, e.clientY - r.top);
             });
+            arcCanvas.addEventListener('mouseup', () => { mouseDown = false; });
+            arcCanvas.addEventListener('mouseleave', () => { mouseDown = false; });
 
             // ── Eventos Táctiles (Joystick móvil) ──────────────────────────────────────────
             arcCanvas.addEventListener('touchstart', e => {

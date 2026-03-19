@@ -861,7 +861,9 @@
                 }
 
                 if (!isMobile) {
-                    player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+                    const worldMX = isLargeMap ? (mouseX + camera.x) : mouseX;
+                    const worldMY = isLargeMap ? (mouseY + camera.y) : mouseY;
+                    player.angle = Math.atan2(worldMY - player.y, worldMX - player.x);
                     // Disparo continuo al mantener el ratón pulsado
                     if (mouseDown) shoot(mouseX, mouseY);
                 } else {
@@ -892,7 +894,7 @@
                 bullets = bullets.filter(b => {
                     b.x += b.vx * factor;
                     b.y += b.vy * factor;
-                    return b.x > 0 && b.x < arcCanvas.width && b.y > 0 && b.y < arcCanvas.height;
+                    return b.x > -100 && b.x < mapW + 100 && b.y > -100 && b.y < mapH + 100;
                 });
 
                 // Mover balas enemigas
@@ -915,7 +917,7 @@
                             return false; // se destruye la bala
                         }
                     }
-                    return eb.x > 0 && eb.x < arcCanvas.width && eb.y > 0 && eb.y < arcCanvas.height;
+                    return eb.x > -100 && eb.x < mapW + 100 && eb.y > -100 && eb.y < mapH + 100;
                 });
 
                 if (superBossWarning > 0) superBossWarning -= dt;

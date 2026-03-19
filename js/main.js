@@ -1,4 +1,4 @@
-﻿        'use strict';
+        'use strict';
 
         // ── Partículas decorativas ────────────────────────────────────────────────────
         (function () {
@@ -495,6 +495,8 @@
                 let hasBoss = (!hasSuperBoss && w % 10 === 0);
                 let hasMiniBoss = (!hasSuperBoss && !hasBoss && w % 5 === 0);
 
+                let hasElite = (!hasSuperBoss && !hasBoss && !hasMiniBoss && w % 3 === 0 && w > 1);
+
                 if (hasSuperBoss) { count = Math.max(1, Math.floor(count * 0.2)); superBossWarning = 3000; }
                 else if (hasBoss) count = Math.max(2, Math.floor(count * 0.4));
 
@@ -504,9 +506,9 @@
                     enemies.push({
                         id: Math.random(),
                         x: arcCanvas.width / 2, y: 50,
-                        hp: ENEMY_MAX_HP * 35 + w * 60, maxHp: ENEMY_MAX_HP * 35 + w * 60,
-                        speed: ENEMY_BASE_SPEED * 1.3 + w * 0.02, angle: 0,
-                        type: 'superboss', subType: st, r: 60, dmg: 50, xpDrop: 3000, color: '#f43f5e',
+                        hp: ENEMY_MAX_HP * 45 + w * 80, maxHp: ENEMY_MAX_HP * 45 + w * 80,
+                        speed: ENEMY_BASE_SPEED * 1.4 + w * 0.025, angle: 0,
+                        type: 'superboss', subType: st, r: 65, dmg: 65, xpDrop: 3500, color: '#f43f5e',
                         cooldown: 0, phaseTimer: 0, dash: 0
                     });
                 } else if (hasBoss) {
@@ -514,9 +516,9 @@
                     enemies.push({
                         id: Math.random(),
                         x: arcCanvas.width / 2, y: 50,
-                        hp: ENEMY_MAX_HP * 15 + w * 40, maxHp: ENEMY_MAX_HP * 15 + w * 40,
-                        speed: ENEMY_BASE_SPEED * 1.1 + w * 0.02, angle: 0,
-                        type: 'boss', subType: st, r: 35, dmg: 40, xpDrop: 1500, color: '#a855f7',
+                        hp: ENEMY_MAX_HP * 25 + w * 50, maxHp: ENEMY_MAX_HP * 25 + w * 50,
+                        speed: ENEMY_BASE_SPEED * 1.25 + w * 0.025, angle: 0,
+                        type: 'boss', subType: st, r: 40, dmg: 50, xpDrop: 2000, color: '#a855f7',
                         cooldown: 0, phaseTimer: 0, dash: 0
                     });
                 } else if (hasMiniBoss) {
@@ -524,9 +526,18 @@
                     enemies.push({
                         id: Math.random(),
                         x: Math.random() > 0.5 ? 40 : arcCanvas.width - 40, y: arcCanvas.height / 2,
-                        hp: ENEMY_MAX_HP * 5 + w * 20, maxHp: ENEMY_MAX_HP * 5 + w * 20,
-                        speed: ENEMY_BASE_SPEED * 0.9 + w * 0.02, angle: 0,
-                        type: 'miniboss', subType: st, r: 24, dmg: 30, xpDrop: 500, color: '#eab308',
+                        hp: ENEMY_MAX_HP * 10 + w * 30, maxHp: ENEMY_MAX_HP * 10 + w * 30,
+                        speed: ENEMY_BASE_SPEED * 1.2 + w * 0.03, angle: 0,
+                        type: 'miniboss', subType: st, r: 30, dmg: 40, xpDrop: 800, color: '#eab308',
+                        cooldown: 0, phaseTimer: 0, dash: 0
+                    });
+                } else if (hasElite) {
+                    enemies.push({
+                        id: Math.random(),
+                        x: Math.random() > 0.5 ? 40 : arcCanvas.width - 40, y: arcCanvas.height / 2,
+                        hp: ENEMY_MAX_HP * 3.5 + w * 15, maxHp: ENEMY_MAX_HP * 3.5 + w * 15,
+                        speed: ENEMY_BASE_SPEED * 1.2 + w * 0.03, angle: 0,
+                        type: 'elite_normal', r: 22, dmg: DAMAGE_PER_HIT * 1.5 + w * 2, xpDrop: 150 + w * 5, color: '#7f1d1d',
                         cooldown: 0, phaseTimer: 0, dash: 0
                     });
                 }
@@ -764,18 +775,18 @@
                         if (e.subType === 'charger') {
                             e.cooldown -= dt;
                             if (e.cooldown <= 0) {
-                                if (len < 300) { e.cooldown = 2000; e.dash = 400; e.dashVx = (dx / len); e.dashVy = (dy / len); }
-                                else { e.cooldown = 1000; }
+                                if (len < 400) { e.cooldown = 1500; e.dash = 400; e.dashVx = (dx / len); e.dashVy = (dy / len); }
+                                else { e.cooldown = 800; }
                             }
-                            if (e.dash > 0) { e.dash -= dt; e.x += e.dashVx * (spd * 3.5); e.y += e.dashVy * (spd * 3.5); }
-                            else { e.x += (dx / len) * spd; e.y += (dy / len) * spd; }
+                            if (e.dash > 0) { e.dash -= dt; e.x += e.dashVx * (spd * 4.5); e.y += e.dashVy * (spd * 4.5); }
+                            else { e.x += (dx / len) * (spd * 1.5); e.y += (dy / len) * (spd * 1.5); }
                         } else { // twin_shooter
                             e.cooldown -= dt;
-                            if (e.cooldown <= 0 && len < 400) {
-                                e.cooldown = 1500;
+                            if (e.cooldown <= 0 && len < 500) {
+                                e.cooldown = 1100;
                                 for (let k = -1; k <= 1; k += 2) {
                                     let a = Math.atan2(dy, dx) + k * 0.3;
-                                    enemyBullets.push({ x: e.x, y: e.y, r: 5, dmg: Math.floor(e.dmg * 0.6), vx: Math.cos(a) * BULLET_SPEED * 0.6, vy: Math.sin(a) * BULLET_SPEED * 0.6 });
+                                    enemyBullets.push({ x: e.x, y: e.y, r: 6, dmg: Math.floor(e.dmg * 0.7), vx: Math.cos(a) * BULLET_SPEED * 0.8, vy: Math.sin(a) * BULLET_SPEED * 0.8 });
                                 }
                             }
                             if (len < 150) spd = -spd * 0.5; else if (len < 250) spd = 0;

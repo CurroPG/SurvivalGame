@@ -39,9 +39,11 @@
             align-items: center;
             justify-content: center;
             transition: opacity .35s ease, transform .35s ease;
+            background: var(--bg); /* Asegura que cada pantalla sea opaca */
         }
 
         .screen.hidden {
+            display: none !important;
             opacity: 0;
             pointer-events: none;
             transform: scale(.97);

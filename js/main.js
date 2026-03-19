@@ -361,7 +361,7 @@
                 meta.upgrades[id]++;
                 saveMeta();
                 updateShopUI();
-                Sfx.play('gem');
+                if (window.Sfx) window.Sfx.play('gem');
             }
         }
 
@@ -1301,6 +1301,8 @@
             }
             window.arcadeStop = arcadeStop;
             window.arcadeStart = arcadeStart;
+            window.Sfx = Sfx; // Exportar Sfx globalmente para la tienda
+
 
             // ── Controles de teclado ──────────────────────────────────────────────────────
             window.addEventListener('keydown', e => { keys[e.key] = true; });

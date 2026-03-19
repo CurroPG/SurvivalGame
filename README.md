@@ -1,6 +1,6 @@
 # ⚔️ SurvivalGame
 
-> Simulación de persecución y huida · Modo Arcade incluido
+> Simulación de persecución y huida · Modo Arcade con Metaprogresión
 
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
@@ -11,30 +11,31 @@
 
 ## 📖 Descripción
 
-SurvivalGame nació como práctica de programación orientada a objetos en Java y evolucionó hasta convertirse en una aplicación web completa que funciona directamente en el navegador.
+SurvivalGame nació como práctica de programación orientada a objetos en Java y ha evolucionado a una aplicación web completa con un sistema profundo de **metaprogresión**.
 
-El núcleo del juego modela el **comportamiento emergente de agentes autónomos**: entidades *buenas* que huyen y entidades *malas* que persiguen, usando estrategias de movimiento intercambiables (patrón Strategy). El resultado es una simulación viva donde el caos surge de reglas simples.
+El núcleo del juego modela el **comportamiento emergente de agentes autónomos**: entidades *buenas* que huyen y entidades *malas* que persiguen, usando estrategias de movimiento intercambiables (patrón Strategy).
 
 ---
 
 ## 🎮 Modos de juego
 
 ### 🔬 Simulación
-Configura libremente el número de buenos, malos y obstáculos y observa cómo los agentes interactúan en tiempo real sobre el tablero. Ideal para estudiar el comportamiento emergente del sistema.
+Configura libremente el número de buenos, malos y obstáculos para observar cómo interactúan en tiempo real. Ideal para estudiar comportamientos emergentes.
 
-### ⚔️ Arcade
-Tú eres el jugador. Sobrevive oleadas de enemigos cada vez más difíciles, gana experiencia, sube de nivel y elige mejoras de poder. Compatible con teclado + ratón y con pantalla táctil.
+### ⚔️ Arcade (RPG Lite)
+Tú eres el jugador. Sobrevive a oleadas de enemigos, gana experiencia, sube de nivel y elige power-ups temporales. Ahora incluye un **sistema de moneda** para comprar mejoras permanentes.
 
 ---
 
-## ✨ Características
+## ✨ Características Principales
 
-- 🏗️ **Arquitectura orientada a objetos** — clases `Posicion`, `Elementos`, `Buenos`, `Malos`, `Obstaculos` y `Mapa`, fiel traducción del diseño Java original
-- 🧠 **Patrón Strategy** — `Huir` y `Perseguir` son intercambiables en tiempo de ejecución sin modificar las entidades
-- 🌊 **Sistema de oleadas escalable** — 6 tipos de enemigos: normal, runner, shooter, miniboss, boss y superboss, cada uno con comportamiento único
-- ⭐ **Progresión del jugador** — experiencia, niveles y 9 power-ups seleccionables (daño, velocidad, cadencia, multidisparo, perforación, vampirismo…)
-- 📱 **Soporte móvil completo** — joystick táctil virtual con movimiento analógico y auto-apuntado automático
-- 🎨 **Interfaz moderna** — dark mode, partículas animadas, transiciones suaves y HUD en tiempo real
+- 🧬 **Metaprogresión Permanente** — Gana monedas en el modo arcade y gástalas en la **Tienda** para mejorar para siempre tu Vitalidad, Fuerza, Rapidez y Rango de imán.
+- 💾 **Persistencia con LocalStorage** — Tus mejoras y monedas se guardan automáticamente en el navegador.
+- 🌊 **Oleadas de Jefes** — Enfrenta a 6 tipos de enemigos (Normal, Runner, Shooter, Miniboss, Boss y **Superboss**) con patrones de ataque únicos.
+- 🗺️ **Mapa Expandido** — A partir de la ronda 10 el mapa se expande y desde la 15 se convierte en un **mapa infinito con cámara dinámica**.
+- 🧠 **Arquitectura Sólida** — Basado en patrones de diseño (Strategy) y OOP, manteniendo la esencia del diseño Java original.
+- 📱 **Soporte Móvil Pro** — Joystick táctil con movimiento analógico y auto-apuntado inteligente.
+- 🎨 **Estética Premium** — Dark mode, efectos de partículas, animaciones fluidas y Web Audio API para efectos de sonido.
 
 ---
 
@@ -43,58 +44,44 @@ Tú eres el jugador. Sobrevive oleadas de enemigos cada vez más difíciles, gan
 | Acción | Teclado / Ratón | Móvil |
 |--------|----------------|-------|
 | Mover | `WASD` o flechas | Joystick táctil |
-| Disparar | Click izquierdo | Auto-apuntado automático |
+| Disparar | Click izquierdo (Apuntar con ratón) | Auto-apuntado automático |
 
 ---
 
-## 🚀 Despliegue con Vercel
-
-El proyecto no tiene dependencias ni proceso de build, lo que lo hace ideal para Vercel.
-
-1. Sube el proyecto a un repositorio de GitHub
-2. Entra en [vercel.com](https://vercel.com) e importa el repositorio
-3. En la configuración del proyecto, establece el **directorio raíz** como `js/`
-4. Haz click en **Deploy** — Vercel detecta automáticamente que es un sitio estático
-
-Cada push a `main` desplegará una nueva versión automáticamente.
+## 🚀 Instalación y Despliegue
 
 ### Ejecución local
+Simplemente abre el archivo `index.html` en cualquier navegador moderno. No requiere servidor ni instalación de dependencias.
 
-También puedes ejecutarlo localmente sin ninguna instalación:
-
-```bash
-# Simplemente abre el archivo en tu navegador:
-js/index.html
-```
+### Despliegue en Vercel / Netlify
+1. Sube el repositorio.
+2. Configura el **directorio raíz** como el de este repositorio.
+3. El despliegue es automático (sitio estático).
 
 ---
 
-## 🗂️ Estructura
+## 🗂️ Estructura del Proyecto
 
 ```
 SurvivalGame/
-└── js/
-    └── index.html      # Todo el proyecto: HTML + CSS + JS en un único archivo
+├── index.html      # Estructura y contenedores de pantallas
+├── style.css       # Diseño visual, animaciones y sistema de temas
+├── js/
+│   └── main.js     # Lógica completa: OOP, Motor del juego, Arcade y Tienda
+└── README.md
 ```
-
-El código está organizado en secciones claramente comentadas:
-
-1. Reset CSS y variables de diseño global
-2. Sistema de pantallas (menú, configuración, simulación, arcade)
-3. Lógica de simulación — clases del dominio + canvas game loop
-4. Mini-juego arcade — oleadas, power-ups y controles táctiles
 
 ---
 
-## 🛣️ Roadmap
+## 🧪 Próximos Pasos (Roadmap)
 
-- [ ] Tabla de récords local con `localStorage`
-- [ ] Efectos de sonido con Web Audio API
-- [ ] Pantalla de victoria en la simulación
-- [ ] Dash del jugador (Shift / doble tap)
+- [ ] Efectos visuales de "Shake" en la cámara al recibir daño.
+- [ ] Nuevos biomas visuales que cambien cada 10 oleadas.
+- [ ] Sistema de Logros (Achievements) vinculados a la metaprogresión.
+- [ ] Tabla de récords global (requiere backend).
 
 ---
 
 ## 👤 Autor
 
-Desarrollado por **CurroPG** — [github.com/CurroPG/SurvivalGameJava](https://github.com/CurroPG/SurvivalGameJava)
+Desarrollado por **CurroPG** — [github.com/CurroPG/SurvivalGameJava](https://github.com/CurroPG/SurvivalGameJava)

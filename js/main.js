@@ -306,7 +306,7 @@
             const PLAYER_RADIUS = 18;
             const ENEMY_RADIUS = 14;
             const BULLET_RADIUS = 6;
-            const PLAYER_SPEED = 2.3; // Aún más lenta
+            const PLAYER_SPEED = 3.0; // Aumentada velocidad base
             const BULLET_SPEED = 9;
             const ENEMY_BASE_SPEED = 1.0;
             const PLAYER_MAX_HP = 100;
@@ -403,6 +403,7 @@
             let waveDelay = 0;
             let flashAlpha = 0;
             let level = 1, xp = 0, maxXp = 100;
+            let camera = { x: 0, y: 0 }; // Cámara para mapa infinito
 
             // HUD elements
             const elPlayerBar = document.getElementById('arc-player-bar');
@@ -483,6 +484,7 @@
                 level = 1; xp = 0; maxXp = 100;
                 arcState = 'playing';
                 waveDelay = 0; flashAlpha = 0; superBossWarning = 0;
+                camera = { x: 0, y: 0 };
                 elLvlOverlay.classList.add('hidden');
                 spawnWave(wave);
                 updateHUD();
@@ -503,9 +505,11 @@
                 // Desoves especiales dependientes de subtipos aleatorios (comportamientos únicos)
                 if (hasSuperBoss) {
                     let st = Math.random() > 0.5 ? 'bullet_hell' : 'berserker';
+                    let sx = isInfinite ? (camera.x + arcCanvas.width / 2) : (arcCanvas.width / 2);
+                    let sy = isInfinite ? (camera.y + 50) : 50;
                     enemies.push({
                         id: Math.random(),
-                        x: arcCanvas.width / 2, y: 50,
+                        x: sx, y: sy,
                         hp: ENEMY_MAX_HP * 45 + w * 80, maxHp: ENEMY_MAX_HP * 45 + w * 80,
                         speed: ENEMY_BASE_SPEED * 1.4 + w * 0.025, angle: 0,
                         type: 'superboss', subType: st, r: 65, dmg: 65, xpDrop: 3500, color: '#f43f5e',
@@ -513,9 +517,11 @@
                     });
                 } else if (hasBoss) {
                     let st = Math.random() > 0.5 ? 'summoner' : 'spread_shooter';
+                    let sx = isInfinite ? (camera.x + arcCanvas.width / 2) : (arcCanvas.width / 2);
+                    let sy = isInfinite ? (camera.y + 50) : 50;
                     enemies.push({
                         id: Math.random(),
-                        x: arcCanvas.width / 2, y: 50,
+                        x: sx, y: sy,
                         hp: ENEMY_MAX_HP * 25 + w * 50, maxHp: ENEMY_MAX_HP * 25 + w * 50,
                         speed: ENEMY_BASE_SPEED * 1.25 + w * 0.025, angle: 0,
                         type: 'boss', subType: st, r: 40, dmg: 50, xpDrop: 2000, color: '#a855f7',
@@ -560,15 +566,24 @@
                 // Probabilidades de enemigos especiales avanzadas (a partir de la oleada 2-3)
                 const probRunner = Math.min(0.4, w * 0.03);
                 const probShooter = Math.min(0.3, w * 0.02);
+                const isInfinite = (w > 15);
 
                 for (let i = 0; i < count; i++) {
                     let ex, ey;
-                    const side = Math.floor(Math.random() * 4);
-                    const pad = ENEMY_RADIUS + 5;
-                    if (side === 0) { ex = Math.random() * arcCanvas.width; ey = pad; }
-                    else if (side === 1) { ex = arcCanvas.width - pad; ey = Math.random() * arcCanvas.height; }
-                    else if (side === 2) { ex = Math.random() * arcCanvas.width; ey = arcCanvas.height - pad; }
-                    else { ex = pad; ey = Math.random() * arcCanvas.height; }
+                    if (!isInfinite) {
+                        const side = Math.floor(Math.random() * 4);
+                        const pad = ENEMY_RADIUS + 5;
+                        if (side === 0) { ex = Math.random() * arcCanvas.width; ey = pad; }
+                        else if (side === 1) { ex = arcCanvas.width - pad; ey = Math.random() * arcCanvas.height; }
+                        else if (side === 2) { ex = Math.random() * arcCanvas.width; ey = arcCanvas.height - pad; }
+                        else { ex = pad; ey = Math.random() * arcCanvas.height; }
+                    } else {
+                        // Spawn en un anillo alrededor del jugador en mapa infinito
+                        const dist = Math.max(arcCanvas.width, arcCanvas.height) * 0.6 + Math.random() * 200;
+                        const ang = Math.random() * Math.PI * 2;
+                        ex = player.x + Math.cos(ang) * dist;
+                        ey = player.y + Math.sin(ang) * dist;
+                    }
 
                     const rnd = Math.random();
                     if (rnd < probShooter && w >= 3) {
@@ -697,11 +712,31 @@
                 }
 
                 const vlen = Math.sqrt(vx * vx + vy * vy) || 1;
+                const isInfinite = (wave > 15);
+
                 if (vx !== 0 || vy !== 0) {
                     const spd = PLAYER_SPEED * player.speedMult * factor;
-                    const moveMult = isMobile ? Math.min(vlen, 1) : 1; // los joystick analogicos pueden no ir al 100% de vel si el dedo no esta estirado
-                    player.x = Math.max(PLAYER_RADIUS, Math.min(arcCanvas.width - PLAYER_RADIUS, player.x + (vx / vlen) * spd * moveMult));
-                    player.y = Math.max(PLAYER_RADIUS, Math.min(arcCanvas.height - PLAYER_RADIUS, player.y + (vy / vlen) * spd * moveMult));
+                    const moveMult = isMobile ? Math.min(vlen, 1) : 1;
+                    
+                    if (isInfinite) {
+                        player.x += (vx / vlen) * spd * moveMult;
+                        player.y += (vy / vlen) * spd * moveMult;
+                    } else {
+                        player.x = Math.max(PLAYER_RADIUS, Math.min(arcCanvas.width - PLAYER_RADIUS, player.x + (vx / vlen) * spd * moveMult));
+                        player.y = Math.max(PLAYER_RADIUS, Math.min(arcCanvas.height - PLAYER_RADIUS, player.y + (vy / vlen) * spd * moveMult));
+                    }
+                }
+
+                // Actualizar cámara
+                if (isInfinite) {
+                    // Seguir al jugador suavemente
+                    const targetCamX = player.x - arcCanvas.width / 2;
+                    const targetCamY = player.y - arcCanvas.height / 2;
+                    camera.x += (targetCamX - camera.x) * 0.1 * factor;
+                    camera.y += (targetCamY - camera.y) * 0.1 * factor;
+                } else {
+                    camera.x = 0;
+                    camera.y = 0;
                 }
 
                 if (!isMobile) {
@@ -941,15 +976,28 @@
             // ── Render ────────────────────────────────────────────────────────────────────
             function arcadeRender() {
                 const W = arcCanvas.width, H = arcCanvas.height;
+                const isInfinite = (wave > 15);
                 arcCtx.clearRect(0, 0, W, H);
 
-                // Fondo cuadriculado
+                // Fondo
                 arcCtx.fillStyle = '#080c14';
                 arcCtx.fillRect(0, 0, W, H);
+                
+                arcCtx.save();
+                if (isInfinite) arcCtx.translate(-camera.x, -camera.y);
+
+                // Fondo cuadriculado infinito o fijo
                 arcCtx.strokeStyle = '#111827'; arcCtx.lineWidth = .5;
                 const G = 40;
-                for (let x = 0; x < W; x += G) { arcCtx.beginPath(); arcCtx.moveTo(x, 0); arcCtx.lineTo(x, H); arcCtx.stroke(); }
-                for (let y = 0; y < H; y += G) { arcCtx.beginPath(); arcCtx.moveTo(0, y); arcCtx.lineTo(W, y); arcCtx.stroke(); }
+                if (isInfinite) {
+                    const startX = Math.floor(camera.x / G) * G;
+                    const startY = Math.floor(camera.y / G) * G;
+                    for (let x = startX; x < startX + W + G; x += G) { arcCtx.beginPath(); arcCtx.moveTo(x, camera.y); arcCtx.lineTo(x, camera.y + H); arcCtx.stroke(); }
+                    for (let y = startY; y < startY + H + G; y += G) { arcCtx.beginPath(); arcCtx.moveTo(camera.x, y); arcCtx.lineTo(camera.x + W, y); arcCtx.stroke(); }
+                } else {
+                    for (let x = 0; x < W; x += G) { arcCtx.beginPath(); arcCtx.moveTo(x, 0); arcCtx.lineTo(x, H); arcCtx.stroke(); }
+                    for (let y = 0; y < H; y += G) { arcCtx.beginPath(); arcCtx.moveTo(0, y); arcCtx.lineTo(W, y); arcCtx.stroke(); }
+                }
 
                 // XP Gems
                 for (const g of xpGems) {
@@ -1037,9 +1085,10 @@
                     arcCtx.fillStyle = 'rgba(255,255,255,.8)';
                     arcCtx.beginPath(); arcCtx.arc(player.x, player.y, 5, 0, Math.PI * 2); arcCtx.fill();
                 }
-                arcCtx.shadowBlur = 0;
+                
+                arcCtx.restore();
 
-                // Flash rojo al recibir daño
+                // Flash rojo al recibir daño (fuera del transform de cámara para cubrir toda la pantalla)
                 if (flashAlpha > 0) {
                     arcCtx.fillStyle = `rgba(239,68,68,${flashAlpha})`;
                     arcCtx.fillRect(0, 0, W, H);

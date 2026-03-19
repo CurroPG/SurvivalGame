@@ -613,7 +613,7 @@
             function spawnWave(w) {
                 // Escalado de dificultad mayor
                 let count = 4 + Math.floor(w * 2.5);
-                const isInfinite = (w > 15);
+                const isLargeMap = (w > 15);
                 let hasSuperBoss = (w % 15 === 0);
                 let hasBoss = (!hasSuperBoss && w % 10 === 0);
                 let hasMiniBoss = (!hasSuperBoss && !hasBoss && w % 5 === 0);

@@ -25,6 +25,7 @@
             config: document.getElementById('config'),
             game: document.getElementById('game'),
             info: document.getElementById('info'),
+            shop: document.getElementById('shop'),
         };
 
         function showScreen(name, direction = 'right') {
@@ -41,10 +42,12 @@
         }
 
         document.getElementById('btn-goto-config').addEventListener('click', () => showScreen('config'));
-        document.getElementById('btn-goto-info').addEventListener('click', () => showScreen('info'));
+        document.getElementById('btn-goto-shop').addEventListener('click', () => { showScreen('shop'); updateShopUI(); });
         document.getElementById('btn-config-back').addEventListener('click', () => showScreen('menu', 'left'));
-        document.getElementById('btn-info-back').addEventListener('click', () => { arcadeStop(); showScreen('menu', 'left'); });
+        document.getElementById('btn-info-back').addEventListener('click', () => { arcadeStop(); showScreen('shop', 'left'); });
         document.getElementById('btn-game-back').addEventListener('click', () => { stopGame(); showScreen('menu', 'left'); });
+        document.getElementById('btn-shop-back').addEventListener('click', () => showScreen('menu', 'left'));
+        document.getElementById('btn-start-arcade').addEventListener('click', () => showScreen('info'));
 
         // ── Sliders de configuración ──────────────────────────────────────────────────
         function bindSlider(sliderId, valueId) {
@@ -283,6 +286,118 @@
             ctx.fillText('Pulsa 🔄 para reiniciar', canvas.width / 2, canvas.height / 2 + CELL * 4);
         }
 
+        // ── Meta Progresión ────────────────────────────────────────────────────────
+        const META_UPGRADES = [
+            { id: 'hp', icon: '❤️', name: 'Vitalidad', desc: '+20 HP Máx', levels: 6, basePrice: 100, mult: 1.8 },
+            { id: 'dmg', icon: '💥', name: 'Fuerza', desc: '+5 Daño Base', levels: 6, basePrice: 150, mult: 2.0 },
+            { id: 'spd', icon: '⚡', name: 'Rapidez', desc: '+8% Vel. Base', levels: 6, basePrice: 200, mult: 2.2 },
+            { id: 'mag', icon: '🧲', name: 'Atracción', desc: '+30 Rango Imán', levels: 6, basePrice: 120, mult: 1.7 },
+        ];
+
+        let meta = {
+            money: 0,
+            upgrades: { hp: 0, dmg: 0, spd: 0, mag: 0 }
+        };
+
+        function loadMeta() {
+            const saved = localStorage.getItem('survival_meta');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    meta = { ...meta, ...parsed };
+                } catch (e) { console.error("Error cargando meta", e); }
+            }
+        }
+        function saveMeta() {
+            localStorage.setItem('survival_meta', JSON.stringify(meta));
+        }
+
+        function updateShopUI() {
+            const container = document.getElementById('upgrades-container');
+            const elMoney = document.getElementById('shop-money');
+            elMoney.textContent = meta.money;
+
+            container.innerHTML = '';
+            META_UPGRADES.forEach(up => {
+                const lvl = meta.upgrades[up.id];
+                const price = Math.floor(up.basePrice * Math.pow(up.mult, lvl));
+                const isMax = lvl >= up.levels;
+
+                const card = document.createElement('div');
+                card.className = 'up-card';
+                card.innerHTML = `
+                    <div class="up-header">
+                        <div class="up-icon">${up.icon}</div>
+                        <div class="up-title">
+                            <h3>${up.name}</h3>
+                            <p>${up.desc}</p>
+                        </div>
+                    </div>
+                    <div class="up-level">
+                        ${Array.from({ length: up.levels }).map((_, i) => `<div class="lvl-dot ${i < lvl ? 'active' : ''}"></div>`).join('')}
+                    </div>
+                    <div class="up-buy">
+                        <span class="price">${isMax ? 'MÁXIMO' : `💰 ${price}`}</span>
+                        <button class="btn-buy" ${isMax || meta.money < price ? 'disabled' : ''}>
+                            ${isMax ? 'COMPRADO' : 'MEJORAR'}
+                        </button>
+                    </div>
+                `;
+                const btn = card.querySelector('.btn-buy');
+                if (btn) btn.onclick = () => buyUpgrade(up.id, price);
+                container.appendChild(card);
+            });
+
+            // Actualizar stats visuales
+            document.getElementById('stat-hp').textContent = 100 + (meta.upgrades.hp * 20);
+            document.getElementById('stat-dmg').textContent = 10 + (meta.upgrades.dmg * 5);
+            document.getElementById('stat-spd').textContent = (1.0 + (meta.upgrades.spd * 0.08)).toFixed(2) + 'x';
+            document.getElementById('stat-mag').textContent = 120 + (meta.upgrades.mag * 30);
+        }
+
+        function buyUpgrade(id, price) {
+            if (meta.money >= price) {
+                meta.money -= price;
+                meta.upgrades[id]++;
+                saveMeta();
+                updateShopUI();
+                Sfx.play('gem');
+            }
+        }
+
+        loadMeta();
+
+        // Canvas de previsualización en la tienda
+        const previewCanvas = document.getElementById('charPreview');
+        const pCtx = previewCanvas.getContext('2d');
+        let preAngle = 0;
+
+        function renderPreview() {
+            const shopScreen = document.getElementById('shop');
+            if (shopScreen.classList.contains('hidden')) {
+                requestAnimationFrame(renderPreview);
+                return;
+            }
+            previewCanvas.width = 250; previewCanvas.height = 250;
+            const cx = 125, cy = 125;
+            pCtx.clearRect(0, 0, 250, 250);
+
+            preAngle += 0.02;
+            const float = Math.sin(preAngle * 2) * 5;
+
+            pCtx.shadowBlur = 20; pCtx.shadowColor = '#22c55e';
+            pCtx.fillStyle = '#22c55e';
+            pCtx.beginPath(); pCtx.arc(cx, cy + float, 30, 0, Math.PI * 2); pCtx.fill();
+            pCtx.shadowBlur = 0;
+            pCtx.fillStyle = '#fff';
+            pCtx.beginPath(); pCtx.arc(cx + 12, cy + float - 4, 8, 0, Math.PI * 2); pCtx.fill();
+            pCtx.fillStyle = '#000';
+            pCtx.beginPath(); pCtx.arc(cx + 15, cy + float - 4, 3, 0, Math.PI * 2); pCtx.fill();
+
+            requestAnimationFrame(renderPreview);
+        }
+        renderPreview();
+
         // ══════════════════════════════════════════════════════════════════════════════
         // MINI-JUEGO ARCADE – pantalla "Cómo funciona"
         // ══════════════════════════════════════════════════════════════════════════════
@@ -468,11 +583,16 @@
             // ── Inicialización ────────────────────────────────────────────────────────────
             function arcadeInit() {
                 resizeArcCanvas();
+                const bonusHp = meta.upgrades.hp * 20;
+                const bonusDmg = meta.upgrades.dmg * 5;
+                const bonusSpd = meta.upgrades.spd * 0.08;
+                const bonusMag = meta.upgrades.mag * 30;
+
                 player = {
                     x: arcCanvas.width / 2, y: arcCanvas.height / 2,
-                    hp: PLAYER_MAX_HP, maxHp: PLAYER_MAX_HP, invincible: 0, angle: 0,
-                    damage: 10, speedMult: 1.0, multiShot: 0, pierce: 0, vampirism: 0,
-                    shootCooldown: 0, fireRateMult: 1.0, magnetRadius: 120, xpMult: 1.0
+                    hp: PLAYER_MAX_HP + bonusHp, maxHp: PLAYER_MAX_HP + bonusHp, invincible: 0, angle: 0,
+                    damage: 10 + bonusDmg, speedMult: 1.0 + bonusSpd, multiShot: 0, pierce: 0, vampirism: 0,
+                    shootCooldown: 0, fireRateMult: 1.0, magnetRadius: 120 + bonusMag, xpMult: 1.0
                 };
                 bullets = [];
                 enemyBullets = [];
@@ -942,7 +1062,12 @@
                                 player.hp = 0;
                                 arcState = 'dead';
                                 Sfx.play('death');
-                                saveHighScore();
+                                
+                                // Ganar dinero al morir: 50 base + 25 por oleada
+                                const earned = 50 + (wave * 25);
+                                meta.money += earned;
+                                saveMeta();
+                                alert(`¡Has muerto! Has sobrevivido ${wave} oleadas y has ganado 💰 ${earned} monedas.`);
                             }
                             break;
                         }
@@ -968,7 +1093,7 @@
                 const pct = Math.max(0, player.hp / player.maxHp * 100);
                 elPlayerBar.style.width = pct + '%';
                 elWave.textContent = wave;
-                elScore.textContent = score;
+                elScore.textContent = meta.money;
                 elLevel.textContent = level;
                 elXpBar.style.width = Math.min(100, (xp / maxXp) * 100) + '%';
             }

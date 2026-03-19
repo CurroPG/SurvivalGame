@@ -626,8 +626,8 @@
                 // Desoves especiales dependientes de subtipos aleatorios (comportamientos únicos)
                 if (hasSuperBoss) {
                     let st = Math.random() > 0.5 ? 'bullet_hell' : 'berserker';
-                    let sx = isInfinite ? (camera.x + arcCanvas.width / 2) : (arcCanvas.width / 2);
-                    let sy = isInfinite ? (camera.y + 50) : 50;
+                    let sx = (w > 15) ? (camera.x + arcCanvas.width / 2) : (arcCanvas.width / 2);
+                    let sy = (w > 15) ? (camera.y + 50) : 50;
                     enemies.push({
                         id: Math.random(),
                         x: sx, y: sy,
@@ -638,11 +638,11 @@
                     });
                 } else if (hasBoss) {
                     let st = Math.random() > 0.5 ? 'summoner' : 'spread_shooter';
-                    let sx = isInfinite ? (camera.x + arcCanvas.width / 2) : (arcCanvas.width / 2);
-                    let sy = isInfinite ? (camera.y + 50) : 50;
+                    let sx = (w > 15) ? (camera.x + arcCanvas.width / 2) : (arcCanvas.width / 2);
+                    let sy = (w > 15) ? (camera.y + 50) : 50;
                     enemies.push({
                         id: Math.random(),
-                        x: sx, y: sy,
+                        x: sx || 400, y: sy || 50,
                         hp: ENEMY_MAX_HP * 25 + w * 50, maxHp: ENEMY_MAX_HP * 25 + w * 50,
                         speed: ENEMY_BASE_SPEED * 1.25 + w * 0.025, angle: 0,
                         type: 'boss', subType: st, r: 40, dmg: 50, xpDrop: 2000, color: '#a855f7',
@@ -788,9 +788,16 @@
                 if (arcState === 'waveclear') {
                     waveDelay -= dt;
                     if (waveDelay <= 0) {
-                        wave++;
-                        spawnWave(wave);
-                        arcState = 'playing';
+                        const nextWave = wave + 1;
+                        try {
+                            spawnWave(nextWave);
+                            wave = nextWave;
+                            arcState = 'playing';
+                        } catch (e) {
+                            console.error("Error spawning wave:", e);
+                            alert("Error crítico al spawnear oleada: " + e.message);
+                            arcState = 'stopped';
+                        }
                     }
                     return;
                 }

@@ -690,7 +690,7 @@
 
                 for (let i = 0; i < count; i++) {
                     let ex, ey;
-                    if (!isInfinite) {
+                    if (!isLargeMap) {
                         const side = Math.floor(Math.random() * 4);
                         const pad = ENEMY_RADIUS + 5;
                         if (side === 0) { ex = Math.random() * arcCanvas.width; ey = pad; }
@@ -743,11 +743,15 @@
                 if (arcState !== 'playing') return;
                 if (player.shootCooldown > 0) return;
 
-                // El tiempo base sube a 400ms y puede bajar con el multiplicador Fuego Rápido
                 player.shootCooldown = 400 * player.fireRateMult;
                 Sfx.play('shoot');
 
-                const dx = mx - player.x, dy = my - player.y;
+                // Convertir coordenadas de pantalla a mundo
+                const isLargeMap = (wave > 15);
+                const worldX = isLargeMap ? (mx + camera.x) : mx;
+                const worldY = isLargeMap ? (my + camera.y) : my;
+
+                const dx = worldX - player.x, dy = worldY - player.y;
                 const angle = Math.atan2(dy, dx);
                 const ms = player.multiShot;
                 for (let i = 0; i <= ms; i++) {
@@ -788,16 +792,9 @@
                 if (arcState === 'waveclear') {
                     waveDelay -= dt;
                     if (waveDelay <= 0) {
-                        const nextWave = wave + 1;
-                        try {
-                            spawnWave(nextWave);
-                            wave = nextWave;
-                            arcState = 'playing';
-                        } catch (e) {
-                            console.error("Error spawning wave:", e);
-                            alert("Error crítico al spawnear oleada: " + e.message);
-                            arcState = 'stopped';
-                        }
+                        wave++;
+                        spawnWave(wave);
+                        arcState = 'playing';
                     }
                     return;
                 }
@@ -839,26 +836,23 @@
                 }
 
                 const vlen = Math.sqrt(vx * vx + vy * vy) || 1;
-                const isInfinite = (wave > 15);
+                const isLargeMap = (wave > 15);
+                const mapW = isLargeMap ? arcCanvas.width * 3 : arcCanvas.width;
+                const mapH = isLargeMap ? arcCanvas.height * 3 : arcCanvas.height;
 
                 if (vx !== 0 || vy !== 0) {
                     const spd = PLAYER_SPEED * player.speedMult * factor;
                     const moveMult = isMobile ? Math.min(vlen, 1) : 1;
                     
-                    if (isInfinite) {
-                        player.x += (vx / vlen) * spd * moveMult;
-                        player.y += (vy / vlen) * spd * moveMult;
-                    } else {
-                        player.x = Math.max(PLAYER_RADIUS, Math.min(arcCanvas.width - PLAYER_RADIUS, player.x + (vx / vlen) * spd * moveMult));
-                        player.y = Math.max(PLAYER_RADIUS, Math.min(arcCanvas.height - PLAYER_RADIUS, player.y + (vy / vlen) * spd * moveMult));
-                    }
+                    player.x = Math.max(PLAYER_RADIUS, Math.min(mapW - PLAYER_RADIUS, player.x + (vx / vlen) * spd * moveMult));
+                    player.y = Math.max(PLAYER_RADIUS, Math.min(mapH - PLAYER_RADIUS, player.y + (vy / vlen) * spd * moveMult));
                 }
 
                 // Actualizar cámara
-                if (isInfinite) {
-                    // Seguir al jugador suavemente
-                    const targetCamX = player.x - arcCanvas.width / 2;
-                    const targetCamY = player.y - arcCanvas.height / 2;
+                if (isLargeMap) {
+                    // Seguir al jugador suavemente, pero sin salir del mapa
+                    const targetCamX = Math.max(0, Math.min(mapW - arcCanvas.width, player.x - arcCanvas.width / 2));
+                    const targetCamY = Math.max(0, Math.min(mapH - arcCanvas.height, player.y - arcCanvas.height / 2));
                     camera.x += (targetCamX - camera.x) * 0.1 * factor;
                     camera.y += (targetCamY - camera.y) * 0.1 * factor;
                 } else {
@@ -1021,6 +1015,10 @@
                         e.y += (dy / len) * spd;
                     }
 
+                    // Limitar enemigos al mapa
+                    e.x = Math.max(e.r, Math.min(mapW - e.r, e.x));
+                    e.y = Math.max(e.r, Math.min(mapH - e.r, e.y));
+
                     e.angle = Math.atan2(dy, dx);
                 }
 
@@ -1074,7 +1072,6 @@
                                 const earned = 50 + (wave * 25);
                                 meta.money += earned;
                                 saveMeta();
-                                alert(`¡Has muerto! Has sobrevivido ${wave} oleadas y has ganado 💰 ${earned} monedas.`);
                             }
                             break;
                         }
@@ -1108,7 +1105,9 @@
             // ── Render ────────────────────────────────────────────────────────────────────
             function arcadeRender() {
                 const W = arcCanvas.width, H = arcCanvas.height;
-                const isInfinite = (wave > 15);
+                const isLargeMap = (wave > 15);
+                const mapW = isLargeMap ? W * 3 : W;
+                const mapH = isLargeMap ? H * 3 : H;
                 arcCtx.clearRect(0, 0, W, H);
 
                 // Fondo
@@ -1116,20 +1115,23 @@
                 arcCtx.fillRect(0, 0, W, H);
                 
                 arcCtx.save();
-                if (isInfinite) arcCtx.translate(-camera.x, -camera.y);
+                if (isLargeMap) arcCtx.translate(-camera.x, -camera.y);
 
-                // Fondo cuadriculado infinito o fijo
+                // Fondo cuadriculado
                 arcCtx.strokeStyle = '#111827'; arcCtx.lineWidth = .5;
                 const G = 40;
-                if (isInfinite) {
-                    const startX = Math.floor(camera.x / G) * G;
-                    const startY = Math.floor(camera.y / G) * G;
-                    for (let x = startX; x < startX + W + G; x += G) { arcCtx.beginPath(); arcCtx.moveTo(x, camera.y); arcCtx.lineTo(x, camera.y + H); arcCtx.stroke(); }
-                    for (let y = startY; y < startY + H + G; y += G) { arcCtx.beginPath(); arcCtx.moveTo(camera.x, y); arcCtx.lineTo(camera.x + W, y); arcCtx.stroke(); }
-                } else {
-                    for (let x = 0; x < W; x += G) { arcCtx.beginPath(); arcCtx.moveTo(x, 0); arcCtx.lineTo(x, H); arcCtx.stroke(); }
-                    for (let y = 0; y < H; y += G) { arcCtx.beginPath(); arcCtx.moveTo(0, y); arcCtx.lineTo(W, y); arcCtx.stroke(); }
+
+                // Dibujar rejilla limitada por el mapa
+                for (let x = 0; x <= mapW; x += G) { 
+                    arcCtx.beginPath(); arcCtx.moveTo(x, 0); arcCtx.lineTo(x, mapH); arcCtx.stroke(); 
                 }
+                for (let y = 0; y <= mapH; y += G) { 
+                    arcCtx.beginPath(); arcCtx.moveTo(0, y); arcCtx.lineTo(mapW, y); arcCtx.stroke(); 
+                }
+
+                // Borde del mapa
+                arcCtx.strokeStyle = '#ef4444'; arcCtx.lineWidth = 4;
+                arcCtx.strokeRect(0, 0, mapW, mapH);
 
                 // XP Gems
                 for (const g of xpGems) {
@@ -1248,9 +1250,11 @@
                     arcCtx.font = 'bold 48px Inter,sans-serif'; arcCtx.textAlign = 'center';
                     arcCtx.fillText('¡Has muerto!', W / 2, H / 3);
                     arcCtx.shadowBlur = 0;
-                    arcCtx.fillStyle = '#94a3b8';
-                    arcCtx.font = '22px Inter,sans-serif';
-                    arcCtx.fillText(`Puntuación: ${score}  |  Oleada: ${wave}`, W / 2, H / 3 + 40);
+                    arcCtx.fillText(`Oleada alcanzada: ${wave}`, W / 2, H / 3 + 40);
+
+                    const earned = 50 + (wave * 25);
+                    arcCtx.fillStyle = '#facc15';
+                    arcCtx.fillText(`💰 Monedas ganadas: ${earned}`, W / 2, H / 3 + 75);
 
                     // Cargar Récord Actual
                     const hiStr = localStorage.getItem('survivalArcHighScore');
@@ -1258,11 +1262,11 @@
 
                     arcCtx.fillStyle = '#eab308';
                     arcCtx.font = 'bold 24px Inter,sans-serif';
-                    arcCtx.fillText(`👑 Mejor Puntuación: ${Math.max(score, hiScore)} 👑`, W / 2, H / 3 + 85);
+                    arcCtx.fillText(`👑 Mejor Puntuación: ${Math.max(score, hiScore)} 👑`, W / 2, H / 3 + 120);
 
                     arcCtx.fillStyle = '#fff';
                     arcCtx.font = '16px Inter,sans-serif';
-                    arcCtx.fillText('Pulsa 🔄 Reiniciar para volver a jugar', W / 2, H / 3 + 140);
+                    arcCtx.fillText('Pulsa 🔄 Reiniciar para volver a jugar', W / 2, H / 3 + 175);
                 }
             }
 

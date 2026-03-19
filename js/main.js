@@ -1036,7 +1036,6 @@
                             for (let k = 0; k < 4; k++) particles.push(makeParticle(e.x, e.y, e.color));
 
                             if (e.hp <= 0) {
-                                score += 10 * wave * (e.type === 'boss' ? 10 : e.type === 'miniboss' ? 3 : 1);
                                 if (player.vampirism) player.hp = Math.min(player.maxHp, player.hp + player.vampirism);
                                 dropXp(e.x, e.y, Math.floor(e.xpDrop * player.xpMult));
                                 for (let k = 0; k < 12; k++) particles.push(makeParticle(e.x, e.y, '#facc15'));

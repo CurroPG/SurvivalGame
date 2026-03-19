@@ -613,6 +613,7 @@
             function spawnWave(w) {
                 // Escalado de dificultad mayor
                 let count = 4 + Math.floor(w * 2.5);
+                const isInfinite = (w > 15);
                 let hasSuperBoss = (w % 15 === 0);
                 let hasBoss = (!hasSuperBoss && w % 10 === 0);
                 let hasMiniBoss = (!hasSuperBoss && !hasBoss && w % 5 === 0);
@@ -686,7 +687,6 @@
                 // Probabilidades de enemigos especiales avanzadas (a partir de la oleada 2-3)
                 const probRunner = Math.min(0.4, w * 0.03);
                 const probShooter = Math.min(0.3, w * 0.02);
-                const isInfinite = (w > 15);
 
                 for (let i = 0; i < count; i++) {
                     let ex, ey;

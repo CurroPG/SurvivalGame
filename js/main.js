@@ -532,14 +532,29 @@
                         cooldown: 0, phaseTimer: 0, dash: 0
                     });
                 } else if (hasElite) {
-                    enemies.push({
-                        id: Math.random(),
-                        x: Math.random() > 0.5 ? 40 : arcCanvas.width - 40, y: arcCanvas.height / 2,
-                        hp: ENEMY_MAX_HP * 3.5 + w * 15, maxHp: ENEMY_MAX_HP * 3.5 + w * 15,
-                        speed: ENEMY_BASE_SPEED * 1.2 + w * 0.03, angle: 0,
-                        type: 'elite_normal', r: 22, dmg: DAMAGE_PER_HIT * 1.5 + w * 2, xpDrop: 150 + w * 5, color: '#7f1d1d',
-                        cooldown: 0, phaseTimer: 0, dash: 0
-                    });
+                    let et = Math.floor(Math.random() * 3);
+                    if (et === 0) {
+                        enemies.push({
+                            id: Math.random(), x: Math.random() > 0.5 ? 40 : arcCanvas.width - 40, y: arcCanvas.height / 2,
+                            hp: ENEMY_MAX_HP * 3.5 + w * 15, maxHp: ENEMY_MAX_HP * 3.5 + w * 15,
+                            speed: ENEMY_BASE_SPEED * 1.2 + w * 0.03, angle: 0,
+                            type: 'elite_normal', r: 22, dmg: DAMAGE_PER_HIT * 1.5 + w * 2, xpDrop: 150 + w * 5, color: '#7f1d1d', cooldown: 0, phaseTimer: 0, dash: 0
+                        });
+                    } else if (et === 1) {
+                        enemies.push({
+                            id: Math.random(), x: Math.random() > 0.5 ? 40 : arcCanvas.width - 40, y: arcCanvas.height / 2,
+                            hp: ENEMY_MAX_HP * 2.5 + w * 10, maxHp: ENEMY_MAX_HP * 2.5 + w * 10,
+                            speed: ENEMY_BASE_SPEED * 0.9 + w * 0.04, angle: 0,
+                            type: 'elite_shooter', r: 18, dmg: DAMAGE_PER_HIT * 1.2 + w * 2, xpDrop: 150 + w * 5, color: '#0369a1', cooldown: 800, phaseTimer: 0, dash: 0
+                        });
+                    } else {
+                        enemies.push({
+                            id: Math.random(), x: Math.random() > 0.5 ? 40 : arcCanvas.width - 40, y: arcCanvas.height / 2,
+                            hp: ENEMY_MAX_HP * 1.5 + w * 8, maxHp: ENEMY_MAX_HP * 1.5 + w * 8,
+                            speed: ENEMY_BASE_SPEED * 2.4 + w * 0.1, angle: 0,
+                            type: 'elite_runner', r: 14, dmg: DAMAGE_PER_HIT * 1.5 + w * 2, xpDrop: 150 + w * 5, color: '#c2410c', cooldown: 0, phaseTimer: 0, dash: 0
+                        });
+                    }
                 }
 
                 // Probabilidades de enemigos especiales avanzadas (a partir de la oleada 2-3)
@@ -755,7 +770,8 @@
                     const len = Math.sqrt(dx * dx + dy * dy) || 1;
                     let spd = e.speed * factor;
 
-                    if (e.type === 'shooter') {
+                    if (e.type === 'shooter' || e.type === 'elite_shooter') {
+                        let isElite = (e.type === 'elite_shooter');
                         if (len < 180) {
                             spd = -spd * 0.5;
                         } else if (len < 220) {
@@ -763,11 +779,11 @@
                         }
                         e.cooldown -= dt;
                         if (e.cooldown <= 0 && len < 400) {
-                            e.cooldown = 1800 + Math.random() * 1000;
+                            e.cooldown = isElite ? (800 + Math.random() * 500) : (1800 + Math.random() * 1000);
                             enemyBullets.push({
-                                x: e.x, y: e.y, r: 5, dmg: Math.floor(e.dmg * 0.6),
-                                vx: (dx / len) * (BULLET_SPEED * 0.55),
-                                vy: (dy / len) * (BULLET_SPEED * 0.55)
+                                x: e.x, y: e.y, r: isElite ? 7 : 5, dmg: Math.floor(e.dmg * (isElite ? 0.8 : 0.6)),
+                                vx: (dx / len) * (BULLET_SPEED * (isElite ? 0.8 : 0.55)),
+                                vy: (dy / len) * (BULLET_SPEED * (isElite ? 0.8 : 0.55))
                             });
                         }
                         e.x += (dx / len) * spd; e.y += (dy / len) * spd;
@@ -796,19 +812,19 @@
                         if (e.subType === 'summoner') {
                             e.cooldown -= dt;
                             if (e.cooldown <= 0) {
-                                e.cooldown = 3000;
-                                for (let k = 0; k < 2; k++) {
-                                    enemies.push({ id: Math.random(), x: e.x + (Math.random() * 40 - 20), y: e.y + (Math.random() * 40 - 20), hp: ENEMY_MAX_HP + wave * 2, maxHp: ENEMY_MAX_HP + wave * 2, speed: ENEMY_BASE_SPEED + wave * 0.1, angle: 0, type: 'normal', r: ENEMY_RADIUS - 2, dmg: DAMAGE_PER_HIT * 0.5, xpDrop: 5, color: '#ec4899' });
+                                e.cooldown = 1800;
+                                for (let k = 0; k < 4; k++) {
+                                    enemies.push({ id: Math.random(), x: e.x + (Math.random() * 40 - 20), y: e.y + (Math.random() * 40 - 20), hp: ENEMY_MAX_HP + wave * 3, maxHp: ENEMY_MAX_HP + wave * 3, speed: ENEMY_BASE_SPEED + wave * 0.15, angle: 0, type: 'runner', r: ENEMY_RADIUS - 3, dmg: DAMAGE_PER_HIT * 0.6, xpDrop: 5, color: '#ec4899' });
                                 }
                             }
                             e.x += (dx / len) * spd; e.y += (dy / len) * spd;
                         } else { // spread_shooter
                             e.cooldown -= dt;
                             if (e.cooldown <= 0) {
-                                e.cooldown = 2000;
-                                for (let k = 0; k < 8; k++) {
-                                    let a = e.angle + (Math.PI / 4) * k;
-                                    enemyBullets.push({ x: e.x, y: e.y, r: 6, dmg: Math.floor(e.dmg * 0.5), vx: Math.cos(a) * BULLET_SPEED * 0.5, vy: Math.sin(a) * BULLET_SPEED * 0.5 });
+                                e.cooldown = 1200;
+                                for (let k = 0; k < 12; k++) {
+                                    let a = e.angle + (Math.PI / 6) * k;
+                                    enemyBullets.push({ x: e.x, y: e.y, r: 7, dmg: Math.floor(e.dmg * 0.6), vx: Math.cos(a) * BULLET_SPEED * 0.7, vy: Math.sin(a) * BULLET_SPEED * 0.7 });
                                 }
                             }
                             e.x += (dx / len) * spd * 0.5; e.y += (dy / len) * spd * 0.5;
@@ -816,16 +832,16 @@
                     } else if (e.type === 'superboss') {
                         if (e.subType === 'bullet_hell') {
                             e.cooldown -= dt;
-                            e.phaseTimer += dt * 0.002;
+                            e.phaseTimer += dt * 0.0035;
                             if (e.cooldown <= 0) {
-                                e.cooldown = 400; // fires constantly
+                                e.cooldown = 250; // fires constantly fast
                                 let a = e.phaseTimer;
-                                for (let k = 0; k < 4; k++) {
-                                    let ta = a + (Math.PI / 2) * k;
-                                    enemyBullets.push({ x: e.x, y: e.y, r: 7, dmg: Math.floor(e.dmg * 0.4), vx: Math.cos(ta) * BULLET_SPEED * 0.4, vy: Math.sin(ta) * BULLET_SPEED * 0.4 });
+                                for (let k = 0; k < 6; k++) {
+                                    let ta = a + (Math.PI / 3) * k;
+                                    enemyBullets.push({ x: e.x, y: e.y, r: 8, dmg: Math.floor(e.dmg * 0.5), vx: Math.cos(ta) * BULLET_SPEED * 0.6, vy: Math.sin(ta) * BULLET_SPEED * 0.6 });
                                 }
                             }
-                            e.x += (dx / len) * spd * 0.3; e.y += (dy / len) * spd * 0.3;
+                            e.x += (dx / len) * spd * 0.4; e.y += (dy / len) * spd * 0.4;
                         } else { // berserker
                             e.cooldown -= dt;
                             if (e.cooldown <= 0) {

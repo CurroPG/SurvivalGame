@@ -40,7 +40,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- ══════════════════════════════════════════════════════════════════════════
      NUEVA PANTALLA – TIENDA Y MEJORAS
      ══════════════════════════════════════════════════════════════════════════ -->
@@ -59,20 +59,51 @@
             </div>
 
             <div class="shop-content">
-                <div class="preview-panel">
-                    <div class="preview-box">
-                        <canvas id="charPreview"></canvas>
+                <div class="shop-sidebar">
+                    <div class="preview-panel">
+                        <div class="preview-box">
+                            <canvas id="charPreview"></canvas>
+                        </div>
+                        <div class="hero-stats">
+                            <div class="hero-stat"><span>HP:</span><strong id="stat-hp">100</strong></div>
+                            <div class="hero-stat"><span>Daño:</span><strong id="stat-dmg">10</strong></div>
+                            <div class="hero-stat"><span>Velocidad:</span><strong id="stat-spd">1.0x</strong></div>
+                            <div class="hero-stat"><span>Rango:</span><strong id="stat-mag">120</strong></div>
+                        </div>
                     </div>
-                    <div class="hero-stats">
-                        <div class="hero-stat"><span>HP:</span><strong id="stat-hp">100</strong></div>
-                        <div class="hero-stat"><span>Daño:</span><strong id="stat-dmg">10</strong></div>
-                        <div class="hero-stat"><span>Velocidad:</span><strong id="stat-spd">1.0x</strong></div>
-                        <div class="hero-stat"><span>Rango:</span><strong id="stat-mag">120</strong></div>
+
+                    <div class="chests-section">
+                        <h3>Tus Cofres</h3>
+                        <div class="chests-grid" id="chests-container">
+                            <!-- Cofres aquí -->
+                        </div>
                     </div>
                 </div>
 
-                <div class="upgrades-grid" id="upgrades-container">
-                    <!-- Las mejoras se cargarán dinámicamente desde JS -->
+                <div class="shop-main-content">
+                    <div class="tabs-header">
+                        <button class="tab-btn active" data-tab="upgrades">Mejoras</button>
+                        <button class="tab-btn" data-tab="skins">Skins</button>
+                        <button class="tab-btn" data-tab="powers">Poderes</button>
+                    </div>
+
+                    <div class="tab-content active" id="tab-upgrades">
+                        <div class="upgrades-grid" id="upgrades-container">
+                            <!-- Las mejoras se cargarán dinámicamente desde JS -->
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tab-skins">
+                        <div class="skins-grid" id="skins-container">
+                            <!-- Skins aquí -->
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tab-powers">
+                        <div class="powers-grid" id="powers-container">
+                            <!-- Poderes aquí -->
+                        </div>
+                    </div>
                 </div>
             </div>
 

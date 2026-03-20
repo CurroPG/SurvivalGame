@@ -685,7 +685,7 @@
         }
 
         .shop-sidebar {
-            width: 280px;
+            width: 320px;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
@@ -869,6 +869,7 @@
             margin-bottom: 1.5rem;
             background: linear-gradient(135deg, #fff, var(--accent2));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 

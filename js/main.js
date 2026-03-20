@@ -426,8 +426,10 @@ function renderChests() {
                             ${canOpen ? 'ABRIR' : (isUnlocking ? '...' : 'DESBLOQUEAR')}
                         </button>
                     `;
-            slot.querySelector('.btn-chest').onclick = () => {
-                if (canOpen) openChest(idx);
+            const btn = slot.querySelector('.btn-chest');
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                if (canOpen) openChest(idx, slot);
                 else if (!isUnlocking) startUnlock(idx);
             };
         }
@@ -546,21 +548,33 @@ function grantRandomChest() {
     updateShopUI();
 }
 
-function openChest(idx) {
+async function openChest(idx, slotElement) {
+    if (meta.openingChest) return; // Evitar aperturas simultáneas
+    meta.openingChest = true;
+
     const chest = meta.chests[idx];
     const type = CHEST_TYPES.find(t => t.id === chest.type);
+
+    // Animación en la shop
+    if (slotElement) {
+        slotElement.classList.add('chest-opening');
+    }
+
+    // Esperar a la animación (1.5s)
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     // Generar recompensas
     const money = Math.floor(Math.random() * (type.maxMoney - type.minMoney + 1)) + type.minMoney;
     meta.money += money;
 
-    let rewards = [`💰 ${money} Monedas`];
+    let rewards = [
+        { text: `${money} Monedas`, icon: '💰' }
+    ];
 
     // Probabilidades
     if (Math.random() < type.skinProb) {
         const availableSkinsToken = SKINS.filter(s => !meta.unlockedSkins.includes(s.id));
         if (availableSkinsToken.length > 0) {
-            // Seleccionar según peso
             const totalW = availableSkinsToken.reduce((a, b) => a + b.weight, 0);
             let rnd = Math.random() * totalW;
             let chosenSkin = availableSkinsToken[0];
@@ -569,7 +583,7 @@ function openChest(idx) {
                 rnd -= s.weight;
             }
             meta.unlockedSkins.push(chosenSkin.id);
-            rewards.push(`🎨 Skin: ${chosenSkin.name}`);
+            rewards.push({ text: `Skin: ${chosenSkin.name}`, icon: '🎨' });
         }
     }
 
@@ -578,7 +592,7 @@ function openChest(idx) {
         if (availablePowers.length > 0) {
             const power = availablePowers[Math.floor(Math.random() * availablePowers.length)];
             meta.unlockedPowers.push(power.id);
-            rewards.push(`${power.icon} Poder: ${power.name}`);
+            rewards.push({ text: `Poder: ${power.name}`, icon: power.icon });
         }
     }
 
@@ -587,15 +601,41 @@ function openChest(idx) {
         const stat = stats[Math.floor(Math.random() * stats.length)];
         const amt = stat === 'spd' ? 0.05 : (stat === 'dmg' ? 2 : 10);
         meta.initialBuffs[stat] += amt;
-        rewards.push(`✨ Mejora: +${amt} ${stat.toUpperCase()}`);
+        rewards.push({ text: `+${amt} ${stat.toUpperCase()}`, icon: '✨' });
     }
 
-    alert(`¡Cofre Abierto!\nRecompensas:\n${rewards.join('\n')}`);
+    // Mostrar overlay
+    showRewardOverlay(rewards, type.icon);
 
+    meta.openingChest = false;
     meta.chests[idx] = null;
     saveMeta();
     updateShopUI();
+
+    if (window.Sfx) window.Sfx.play('levelup');
 }
+
+function showRewardOverlay(rewards, chestIcon) {
+    const overlay = document.getElementById('reward-overlay');
+    const list = document.getElementById('reward-list');
+    const icon = document.getElementById('reward-chest-icon');
+
+    icon.textContent = chestIcon;
+    list.innerHTML = '';
+
+    rewards.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'reward-item';
+        item.innerHTML = `<span>${r.icon}</span> ${r.text}`;
+        list.appendChild(item);
+    });
+
+    overlay.classList.remove('hidden');
+}
+
+document.getElementById('btn-reward-close').addEventListener('click', () => {
+    document.getElementById('reward-overlay').classList.add('hidden');
+});
 
 function buyUpgrade(id, price) {
     if (meta.money >= price) {

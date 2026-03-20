@@ -72,11 +72,6 @@
                         </div>
                     </div>
 
-                    <div class="chests-section">
-                        <h3>Tus Cofres</h3>
-                        <div class="chests-grid" id="chests-container">
-                            <!-- Cofres aquí -->
-                        </div>
                     </div>
                 </div>
 
@@ -104,6 +99,13 @@
                             <!-- Poderes aquí -->
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="chests-section">
+                <h3>Tus Cofres</h3>
+                <div class="chests-grid" id="chests-container">
+                    <!-- Cofres aquí -->
                 </div>
             </div>
 
@@ -251,6 +253,17 @@
         <!-- Pista de controles -->
         <div class="controls-hint">🕹️ WASD / Flechas para mover &nbsp;|&nbsp; 🖱️ Click para disparar &nbsp;|&nbsp; ❤️
             Los enemigos te dañan al tocarte</div>
+    </div>
+
+    <!-- Overlay de Recompensas -->
+    <div id="reward-overlay" class="screen hidden">
+        <div class="reward-content">
+            <div class="reward-glow"></div>
+            <div class="reward-chest-anim" id="reward-chest-icon">🎁</div>
+            <h2 id="reward-title">¡Cofre Abierto!</h2>
+            <div class="reward-list" id="reward-list"></div>
+            <button class="btn btn-primary" id="btn-reward-close">CONTINUAR</button>
+        </div>
     </div>
 
     <script src="js/main.js"></script>

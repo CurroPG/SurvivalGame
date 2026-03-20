@@ -685,10 +685,10 @@
         }
 
         .shop-sidebar {
-            width: 320px;
+            width: 280px;
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: 1.5rem;
         }
 
         .preview-panel {
@@ -698,88 +698,220 @@
             gap: 1.5rem;
         }
 
+        .chests-section {
+            padding: 0 2rem 1.5rem;
+        }
+
         .chests-section h3 {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--muted);
             margin-bottom: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chests-section h3::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, var(--border), transparent);
         }
 
         .chests-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0.5rem;
+            gap: 1rem;
         }
 
         .chest-slot {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 1rem;
-            padding: 0.5rem;
+            border-radius: 1.25rem;
+            padding: 0.75rem 1rem;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 0.4rem;
-            min-height: 100px;
+            gap: 1rem;
+            min-height: 80px;
             position: relative;
-            text-align: center;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+            cursor: default;
+        }
+
+        .chest-slot:not(.empty):hover {
+            border-color: var(--accent);
+            box-shadow: 0 8px 20px rgba(99, 102, 2 indigo, 0.15);
+            transform: translateY(-3px);
         }
 
         .chest-slot.empty {
             border-style: dashed;
             justify-content: center;
             color: var(--muted);
-            font-size: 0.7rem;
+            font-size: 0.75rem;
+            opacity: 0.6;
         }
 
         .chest-icon {
-            font-size: 1.8rem;
-            width: 45px;
-            height: 45px;
+            font-size: 2.2rem;
+            width: 55px;
+            height: 55px;
             background: var(--bg);
-            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.3s;
+        }
+
+        .chest-slot:not(.empty):hover .chest-icon {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .chest-info {
             display: flex;
             flex-direction: column;
             gap: 2px;
+            text-align: left;
+            flex: 1;
         }
 
         .chest-name {
-            font-size: 0.7rem;
-            font-weight: 700;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 80px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text);
         }
 
         .chest-timer {
-            font-size: 0.65rem;
+            font-size: 0.75rem;
             color: var(--accent2);
-            font-family: monospace;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
         }
 
         .btn-chest {
-            padding: 0.3rem 0.5rem;
-            font-size: 0.6rem;
-            border-radius: 0.4rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            border-radius: 0.75rem;
             border: none;
             background: var(--accent);
             color: white;
             cursor: pointer;
-            font-weight: 700;
-            width: 100%;
+            font-weight: 800;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-chest:hover:not(:disabled) {
+            transform: scale(1.05);
+            filter: brightness(1.1);
         }
 
         .btn-chest:disabled {
             background: var(--border);
+            color: var(--muted);
             cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* ── Reward Overlay ──────────────────────────────────────────────────────── */
+        #reward-overlay {
+            z-index: 100;
+            background: rgba(8, 12, 20, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .reward-content {
+            background: var(--card);
+            border: 2px solid var(--accent);
+            border-radius: 2.5rem;
+            padding: 3rem;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 100px rgba(99, 102, 241, 0.4);
+            animation: reward-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes reward-pop {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .reward-glow {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.2), transparent 70%);
+            pointer-events: none;
+        }
+
+        .reward-chest-anim {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            animation: chest-bounce 2s infinite ease-in-out;
+            display: inline-block;
+        }
+
+        @keyframes chest-bounce {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        .reward-content h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #fff, var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .reward-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .reward-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 0.8rem 1.2rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            animation: item-slide 0.4s both;
+        }
+
+        @keyframes item-slide {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .reward-item:nth-child(2) { animation-delay: 0.1s; }
+        .reward-item:nth-child(3) { animation-delay: 0.2s; }
+        .reward-item:nth-child(4) { animation-delay: 0.3s; }
+
+        .chest-opening {
+            animation: chest-shake 0.5s infinite;
+        }
+
+        @keyframes chest-shake {
+            0% { transform: translate(0) rotate(0); }
+            25% { transform: translate(2px, -2px) rotate(2deg); }
+            50% { transform: translate(-2px, 2px) rotate(-2deg); }
+            75% { transform: translate(2px, 2px) rotate(2deg); }
+            100% { transform: translate(0) rotate(0); }
         }
 
         .shop-main-content {

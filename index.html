@@ -235,8 +235,8 @@
                     <span class="hud-val yellow" id="arc-score">0</span>
                 </div>
             </div>
-            <button class="btn btn-secondary" id="arc-restart" style="font-size:.8rem;padding:.4rem .8rem;">🔄
-                Reiniciar</button>
+            <button class="btn btn-secondary" id="arc-pause-btn" style="font-size:.8rem;padding:.4rem .8rem;">⏸
+                Pausar</button>
         </div>
 
         <div id="arc-wrapper" style="position:relative;flex:1;display:flex;flex-direction:column;width:100%;">
@@ -249,6 +249,38 @@
                     <div class="powerup-cards" id="powerup-container"></div>
                 </div>
             </div>
+
+            <!-- Pause Overlay -->
+            <div id="arc-pause-overlay" class="hidden">
+                <div class="overlay-content">
+                    <h2>⏸ Partida Pausada</h2>
+                    <div class="pause-powers">
+                        <h3>Tus Poderes</h3>
+                        <div id="pause-power-list" class="pause-power-list">
+                            <!-- Se cargará por JS -->
+                        </div>
+                    </div>
+                    <div class="overlay-actions">
+                        <button class="btn btn-primary" id="btn-arc-resume">CONTINUAR</button>
+                        <button class="btn btn-secondary" id="btn-arc-pause-menu">MENÚ PRINCIPAL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Death Overlay -->
+            <div id="arc-death-overlay" class="hidden">
+                <div class="overlay-content death">
+                    <div class="death-icon">💀</div>
+                    <h2>¡HAS CAÍDO!</h2>
+                    <p id="death-stats">Oleada alcanzada: <span id="death-wave">0</span></p>
+                    <div class="death-highscore" id="death-new-hs">👑 ¡NUEVO RÉCORD! 👑</div>
+                    <div class="overlay-actions vertical">
+                        <button class="btn btn-primary btn-large" id="btn-arc-death-restart">VOLVER A INTENTAR 🔄</button>
+                        <button class="btn btn-secondary" id="btn-arc-death-menu">IR AL MENÚ PRINCIPAL</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Canvas del mini-juego -->
             <canvas id="arcadeCanvas"></canvas>
         </div>

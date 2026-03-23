@@ -1141,7 +1141,7 @@ renderPreview();
 
     // ── Actualización ─────────────────────────────────────────────────────────────
     function arcadeUpdate(dt) {
-        if (arcState === 'dead' || arcState === 'stopped' || arcState === 'levelup') return;
+        if (arcState === 'dead' || arcState === 'stopped' || arcState === 'levelup' || arcState === 'paused') return;
 
         if (arcState === 'waveclear') {
             waveDelay -= dt;
@@ -1435,16 +1435,15 @@ renderPreview();
                     flashAlpha = 0.55;
                     Sfx.play('hurt');
                     for (let k = 0; k < 8; k++) particles.push(makeParticle(player.x, player.y, '#ef4444'));
-                    if (player.hp <= 0) {
-                        player.hp = 0;
-                        arcState = 'dead';
-                        Sfx.play('death');
-
-                        // Ya no se ganan monedas tras jugar una partida
-                         grantRandomChest();
-                         saveHighScore(); 
-                         saveMeta();
-                     }
+                        if (player.hp <= 0) {
+                            player.hp = 0;
+                            arcState = 'dead';
+                            Sfx.play('death');
+                            grantRandomChest();
+                            saveHighScore(); 
+                            saveMeta();
+                            showDeathOverlay();
+                        }
                     break;
                 }
             }
@@ -1659,28 +1658,7 @@ renderPreview();
             arcCtx.fillText(`Oleada ${wave + 1} comenzará en breve…`, W / 2, H / 2 + 24);
         }
 
-        if (arcState === 'dead') {
-            arcCtx.fillStyle = 'rgba(0,0,0,.85)';
-            arcCtx.fillRect(0, 0, W, H);
-            arcCtx.shadowColor = '#ef4444'; arcCtx.shadowBlur = 30;
-            arcCtx.fillStyle = '#ef4444';
-            arcCtx.font = 'bold 48px Inter,sans-serif'; arcCtx.textAlign = 'center';
-            arcCtx.fillText('¡Has muerto!', W / 2, H / 3);
-            arcCtx.shadowBlur = 0;
-            arcCtx.fillText(`Oleada alcanzada: ${wave}`, W / 2, H / 3 + 40);
-
-            // Cargar Récord Actual
-            const hiStr = localStorage.getItem('survivalArcHighScore');
-            const hiScore = hiStr ? parseInt(hiStr) : 0;
-
-            arcCtx.fillStyle = '#eab308';
-            arcCtx.font = 'bold 24px Inter,sans-serif';
-            arcCtx.fillText(`👑 Mejor Puntuación: ${Math.max(score, hiScore)} 👑`, W / 2, H / 3 + 120);
-
-            arcCtx.fillStyle = '#fff';
-            arcCtx.font = '16px Inter,sans-serif';
-            arcCtx.fillText('Pulsa 🔄 Reiniciar para volver a jugar', W / 2, H / 3 + 175);
-        }
+        // El texto de muerte en canvas lo hemos quitado para usar el DOM overlay
     }
 
     // Guarda la puntuación actual si es mayor a la guardada
@@ -1697,7 +1675,9 @@ renderPreview();
     function arcadeLoop(ts) {
         const dt = ts - lastTime;
         lastTime = ts;
-        arcadeUpdate(Math.min(dt, 100)); // cap para no saltar frames largos
+        if (arcState === 'playing') {
+            arcadeUpdate(Math.min(dt, 100));
+        }
         arcadeRender();
         arcRAF = requestAnimationFrame(arcadeLoop);
     }
@@ -1866,6 +1846,69 @@ renderPreview();
             <div class="user-score">${hiScore.toLocaleString()}</div>
         `;
     }
+
+    // ── Lógica de Pausa y Muerte ────────────────────────────────────────────────
+    const pauseOverlay = document.getElementById('arc-pause-overlay');
+    const deathOverlay = document.getElementById('arc-death-overlay');
+    const pausePowerList = document.getElementById('pause-power-list');
+
+    function togglePause() {
+        if (arcState === 'dead') return;
+        if (arcState === 'playing') {
+            arcState = 'paused';
+            pauseOverlay.classList.remove('hidden');
+            renderPausePowers();
+        } else if (arcState === 'paused') {
+            arcState = 'playing';
+            pauseOverlay.classList.add('hidden');
+            lastTime = performance.now(); // reset para evitar saltos
+        }
+    }
+
+    function renderPausePowers() {
+        if (!player) return;
+        const powers = [];
+        if (player.vampirism) powers.push({ n: 'Vampirismo', i: '🧛' });
+        if (player.damage > 10) powers.push({ n: 'Super Fuerza', i: '💪' });
+        if (player.xpMult > 1) powers.push({ n: 'Sabiduría', i: '📖' });
+        if (player.v > 0.08) powers.push({ n: 'Velocidad', i: '⚡' });
+        if (player.hasDash) powers.push({ n: 'Dash', i: '💨' });
+        if (player.hasSuperBall) powers.push({ n: 'Súper Bola', i: '🌌' });
+        
+        pausePowerList.innerHTML = powers.map(p => `
+            <div class="pause-power-item">
+                <span>${p.i}</span>
+                <span>${p.n}</span>
+            </div>
+        `).join('') || '<p style="color:var(--muted)">Sin mejoras aún</p>';
+    }
+
+    function showDeathOverlay() {
+        document.getElementById('death-wave').textContent = player.wave;
+        const hiStr = localStorage.getItem('survivalArcHighScore');
+        const isNewHS = score > parseInt(hiStr || '0');
+        document.getElementById('death-new-hs').classList.toggle('hidden', !isNewHS);
+        deathOverlay.classList.remove('hidden');
+    }
+
+    // Botones
+    document.getElementById('arc-pause-btn').addEventListener('click', togglePause);
+    document.getElementById('btn-arc-resume').addEventListener('click', togglePause);
+    document.getElementById('btn-arc-pause-menu').addEventListener('click', () => {
+        arcState = 'dead';
+        arcadeStop();
+        pauseOverlay.classList.add('hidden');
+        showScreen('menu', 'left');
+    });
+
+    document.getElementById('btn-arc-death-restart').addEventListener('click', () => {
+        deathOverlay.classList.add('hidden');
+        arcadeInit();
+    });
+    document.getElementById('btn-arc-death-menu').addEventListener('click', () => {
+        deathOverlay.classList.add('hidden');
+        showScreen('menu', 'left');
+    });
 
     initLeaderboard();
     window.renderLeaderboard = renderLeaderboard;

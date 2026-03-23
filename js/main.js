@@ -1820,14 +1820,15 @@ renderPreview();
         // El texto de muerte en canvas lo hemos quitado para usar el DOM overlay
     }
 
-    // Guarda la puntuación actual si es mayor a la guardada
+    // Guarda la puntuación actual y siempre sube al ranking global
     function saveHighScore() {
         const hiStr = localStorage.getItem('survivalArcHighScore');
         let hiScore = hiStr ? parseInt(hiStr) : 0;
         if (score > hiScore) {
             localStorage.setItem('survivalArcHighScore', score.toString());
-            saveToLeaderboard(score);
         }
+        // Siempre intentar subir al ranking global (no solo récords)
+        saveToLeaderboard(score);
     }
 
     // ── Loop principal ────────────────────────────────────────────────────────────
@@ -2060,10 +2061,21 @@ renderPreview();
     }
 
     function showDeathOverlay() {
-        document.getElementById('death-wave').textContent = player.wave;
+        document.getElementById('death-wave').textContent = wave;
         const hiStr = localStorage.getItem('survivalArcHighScore');
         const isNewHS = score > parseInt(hiStr || '0');
         document.getElementById('death-new-hs').classList.toggle('hidden', !isNewHS);
+
+        // Pre-fill name input with saved name
+        const savedName = localStorage.getItem('survivalPlayerName') || '';
+        const nameInput = document.getElementById('death-player-name');
+        if (nameInput) {
+            nameInput.value = savedName;
+            // Hide section if name already saved
+            const nameSection = document.getElementById('death-name-section');
+            if (nameSection) nameSection.style.display = savedName ? 'none' : 'flex';
+        }
+
         deathOverlay.classList.remove('hidden');
     }
 
@@ -2075,6 +2087,19 @@ renderPreview();
         arcadeStop();
         pauseOverlay.classList.add('hidden');
         showScreen('menu', 'left');
+    });
+
+    // Guardar nombre en death screen
+    safeBindClick('btn-save-name', () => {
+        const nameInput = document.getElementById('death-player-name');
+        if (!nameInput) return;
+        let name = nameInput.value.trim();
+        if (!name) name = 'Jugador_' + Math.floor(Math.random() * 9999);
+        localStorage.setItem('survivalPlayerName', name);
+        const nameSection = document.getElementById('death-name-section');
+        if (nameSection) nameSection.style.display = 'none';
+        // Subir la puntuación ahora que tenemos nombre
+        saveToLeaderboard(score);
     });
 
     document.getElementById('btn-arc-death-restart').addEventListener('click', () => {

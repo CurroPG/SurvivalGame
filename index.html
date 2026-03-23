@@ -275,6 +275,15 @@
                     <h2>¡HAS CAÍDO!</h2>
                     <p id="death-stats">Oleada alcanzada: <span id="death-wave">0</span></p>
                     <div class="death-highscore" id="death-new-hs">👑 ¡NUEVO RÉCORD! 👑</div>
+
+                    <!-- Nombre para el ranking global -->
+                    <div id="death-name-section" style="margin: 0.8rem 0; display:flex; gap:0.5rem; align-items:center; justify-content:center; flex-wrap:wrap;">
+                        <label style="color:var(--muted);font-size:0.9rem;">🌍 Tu nombre en el ranking:</label>
+                        <input id="death-player-name" type="text" placeholder="Ej: CurroPG" maxlength="20"
+                            style="padding:0.4rem 0.8rem; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:0.95rem; width:140px;" />
+                        <button class="btn btn-secondary" id="btn-save-name" style="padding:0.4rem 0.8rem; font-size:0.85rem;">Guardar</button>
+                    </div>
+
                     <div class="overlay-actions vertical">
                         <button class="btn btn-primary btn-large" id="btn-arc-death-restart">VOLVER A INTENTAR 🔄</button>
                         <button class="btn btn-secondary" id="btn-arc-death-menu">IR AL MENÚ PRINCIPAL</button>

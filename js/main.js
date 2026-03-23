@@ -875,6 +875,7 @@ renderPreview();
             div.innerHTML = `<span class="icon">${p.icon}</span><h3>${p.title}</h3><p>${p.desc}</p>`;
             div.onclick = () => {
                 p.apply();
+                if (player.acquiredPowers) player.acquiredPowers.push(p);
                 elLvlOverlay.classList.add('hidden');
                 arcState = 'playing';
                 updateHUD();
@@ -911,7 +912,8 @@ renderPreview();
             shootCooldown: 0, fireRateMult: 1.0, magnetRadius: 120 + bonusMag, xpMult: 1.0,
             powerCooldown: 0, dashDuration: 0,
             skin: SKINS.find(s => s.id === meta.currentSkin) || SKINS[0],
-            power: meta.currentPower
+            power: meta.currentPower,
+            acquiredPowers: []
         };
         bullets = [];
         enemyBullets = [];
@@ -1675,9 +1677,7 @@ renderPreview();
     function arcadeLoop(ts) {
         const dt = ts - lastTime;
         lastTime = ts;
-        if (arcState === 'playing') {
-            arcadeUpdate(Math.min(dt, 100));
-        }
+        arcadeUpdate(Math.min(dt, 100));
         arcadeRender();
         arcRAF = requestAnimationFrame(arcadeLoop);
     }
@@ -1861,18 +1861,11 @@ renderPreview();
 
     function renderPausePowers() {
         if (!player) return;
-        const powers = [];
-        if (player.vampirism) powers.push({ n: 'Vampirismo', i: '🧛' });
-        if (player.damage > 10) powers.push({ n: 'Super Fuerza', i: '💪' });
-        if (player.xpMult > 1) powers.push({ n: 'Sabiduría', i: '📖' });
-        if (player.v > 0.08) powers.push({ n: 'Velocidad', i: '⚡' });
-        if (player.hasDash) powers.push({ n: 'Dash', i: '💨' });
-        if (player.hasSuperBall) powers.push({ n: 'Súper Bola', i: '🌌' });
         
-        pausePowerList.innerHTML = powers.map(p => `
+        pausePowerList.innerHTML = (player.acquiredPowers || []).map(p => `
             <div class="pause-power-item">
-                <span>${p.i}</span>
-                <span>${p.n}</span>
+                <span>${p.icon}</span>
+                <span>${p.title}</span>
             </div>
         `).join('') || '<p style="color:var(--muted)">Sin mejoras aún</p>';
     }

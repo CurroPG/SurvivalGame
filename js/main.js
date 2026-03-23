@@ -214,7 +214,7 @@ safeBindClick('btn-info-back', () => { arcadeStop(); showScreen('shop', 'left');
 
 // ── Supabase Setup ────────────────────────────────────────────────────────────
 const _supabaseUrl = 'https://ovybbobxlamapbyvputc.supabase.co';
-const _supabaseKey = 'sb_publishable_mO4qLVaJdMonv3k3ynoA9A_ZK3l0k8c';
+const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92eWJib2J4bGFtYXBieXZwdXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNTg1NDAsImV4cCI6MjA4OTgzNDU0MH0.A_I9JpyqcearfentEZXFJhLATncYzVH1rTz45bpeMJc';
 let sbClient = null;
 try {
     if (window.supabase && typeof window.supabase.createClient === 'function') {
@@ -1402,7 +1402,7 @@ renderPreview();
         const pct = Math.max(0, player.hp / player.maxHp * 100);
         elPlayerBar.style.width = pct + '%';
         elWave.textContent = wave;
-        elScore.textContent = meta.money;
+        elScore.textContent = score;
         elLevel.textContent = level;
         elXpBar.style.width = Math.min(100, (xp / maxXp) * 100) + '%';
     }
@@ -1585,11 +1585,11 @@ renderPreview();
             arcCtx.shadowColor = '#22c55e'; arcCtx.shadowBlur = 30;
             arcCtx.fillStyle = '#22c55e';
             arcCtx.font = 'bold 42px Inter,sans-serif'; arcCtx.textAlign = 'center';
-            arcCtx.fillText(`¡Oleada ${wave} superada!`, W / 2, H / 2 - 20);
+            arcCtx.fillText(`Wave ${wave} cleared!`, W / 2, H / 2 - 20);
             arcCtx.shadowBlur = 0;
             arcCtx.fillStyle = '#94a3b8';
             arcCtx.font = '20px Inter,sans-serif';
-            arcCtx.fillText(`Oleada ${wave + 1} comenzará en breve…`, W / 2, H / 2 + 24);
+            arcCtx.fillText(`Wave ${wave + 1} will begin shortly…`, W / 2, H / 2 + 24);
         }
 
         // El texto de muerte en canvas lo hemos quitado para usar el DOM overlay
@@ -1802,11 +1802,11 @@ renderPreview();
                     `;
                 }).join('');
             } else {
-                body.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 1rem;">La clasificación está vacía.<br>¡Juega para ser el primero!</td></tr>';
+                body.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 1rem;">The leaderboard is empty.<br>Play to be the first!</td></tr>';
             }
         } catch (err) {
             console.error('Load Leaderboard Error:', err);
-            body.innerHTML = '<tr><td colspan="3" style="text-align:center; color: #ef4444;">Error de red al cargar top 10</td></tr>';
+            body.innerHTML = '<tr><td colspan="4" style="text-align:center; color: #ef4444;">Network error loading top 10</td></tr>';
         }
     }
 
@@ -1859,7 +1859,7 @@ renderPreview();
     }
 
     // Botones
-    document.getElementById('arc-pause-btn').addEventListener('click', togglePause);
+    safeBindClick('btn-arc-pause', togglePause);
     document.getElementById('btn-arc-resume').addEventListener('click', togglePause);
     document.getElementById('btn-arc-pause-menu').addEventListener('click', () => {
         arcState = 'dead';

@@ -1146,8 +1146,8 @@ renderPreview();
                 x: sx, y: sy,
                 hp: ENEMY_MAX_HP * 45 + w * 80, maxHp: ENEMY_MAX_HP * 45 + w * 80,
                 speed: ENEMY_BASE_SPEED * 1.4 + w * 0.025, angle: 0,
-                type: 'superboss', subType: st, r: 65, dmg: 65, xpDrop: 3500, color: '#f43f5e',
-                cooldown: 0, phaseTimer: 0, dash: 0
+                type: 'superboss', subType: st, r: 65, dmg: 75, xpDrop: 3500, color: '#f43f5e',
+                cooldown: 0, phaseTimer: 0, dash: 0, points: 5000 + w * 100
             });
         } else if (hasBoss) {
             let st = Math.random() > 0.5 ? 'summoner' : 'spread_shooter';
@@ -1158,8 +1158,8 @@ renderPreview();
                 x: sx || 400, y: sy || 50,
                 hp: ENEMY_MAX_HP * 25 + w * 50, maxHp: ENEMY_MAX_HP * 25 + w * 50,
                 speed: ENEMY_BASE_SPEED * 1.25 + w * 0.025, angle: 0,
-                type: 'boss', subType: st, r: 40, dmg: 50, xpDrop: 2000, color: '#a855f7',
-                cooldown: 0, phaseTimer: 0, dash: 0
+                type: 'boss', subType: st, r: 40, dmg: 60, xpDrop: 2000, color: '#a855f7',
+                cooldown: 0, phaseTimer: 0, dash: 0, points: 2000 + w * 50
             });
         } else if (hasMiniBoss) {
             let st = Math.random() > 0.5 ? 'charger' : 'twin_shooter';
@@ -1168,31 +1168,31 @@ renderPreview();
                 x: Math.random() > 0.5 ? 40 : arcCanvas.width - 40, y: arcCanvas.height / 2,
                 hp: ENEMY_MAX_HP * 10 + w * 30, maxHp: ENEMY_MAX_HP * 10 + w * 30,
                 speed: ENEMY_BASE_SPEED * 1.2 + w * 0.03, angle: 0,
-                type: 'miniboss', subType: st, r: 30, dmg: 40, xpDrop: 800, color: '#eab308',
-                cooldown: 0, phaseTimer: 0, dash: 0
+                type: 'miniboss', subType: st, r: 30, dmg: 50, xpDrop: 800, color: '#eab308',
+                cooldown: 0, phaseTimer: 0, dash: 0, points: 800 + w * 20
             });
         } else if (hasElite) {
             let et = Math.floor(Math.random() * 3);
             if (et === 0) {
                 enemies.push({
                     id: Math.random(), x: Math.random() > 0.5 ? 40 : arcCanvas.width - 40, y: arcCanvas.height / 2,
-                    hp: ENEMY_MAX_HP * 3.5 + w * 15, maxHp: ENEMY_MAX_HP * 3.5 + w * 15,
-                    speed: ENEMY_BASE_SPEED * 1.2 + w * 0.03, angle: 0,
-                    type: 'elite_normal', r: 22, dmg: DAMAGE_PER_HIT * 1.5 + w * 2, xpDrop: 150 + w * 5, color: '#7f1d1d', cooldown: 0, phaseTimer: 0, dash: 0
+                    hp: ENEMY_MAX_HP * 4 + w * 25, maxHp: ENEMY_MAX_HP * 4 + w * 25,
+                    speed: ENEMY_BASE_SPEED * 1.3 + w * 0.05, angle: 0,
+                    type: 'elite_normal', r: 22, dmg: DAMAGE_PER_HIT * 1.8 + w * 3, xpDrop: 150 + w * 5, points: 150 + w * 5, color: '#7f1d1d', cooldown: 0, phaseTimer: 0, dash: 0
                 });
             } else if (et === 1) {
                 enemies.push({
                     id: Math.random(), x: Math.random() > 0.5 ? 40 : arcCanvas.width - 40, y: arcCanvas.height / 2,
-                    hp: ENEMY_MAX_HP * 2.5 + w * 10, maxHp: ENEMY_MAX_HP * 2.5 + w * 10,
-                    speed: ENEMY_BASE_SPEED * 0.9 + w * 0.04, angle: 0,
-                    type: 'elite_shooter', r: 18, dmg: DAMAGE_PER_HIT * 1.2 + w * 2, xpDrop: 150 + w * 5, color: '#0369a1', cooldown: 800, phaseTimer: 0, dash: 0
+                    hp: ENEMY_MAX_HP * 3 + w * 20, maxHp: ENEMY_MAX_HP * 3 + w * 20,
+                    speed: ENEMY_BASE_SPEED * 1.0 + w * 0.06, angle: 0,
+                    type: 'elite_shooter', r: 18, dmg: DAMAGE_PER_HIT * 1.5 + w * 3, xpDrop: 150 + w * 5, points: 150 + w * 5, color: '#0369a1', cooldown: 600, phaseTimer: 0, dash: 0
                 });
             } else {
                 enemies.push({
                     id: Math.random(), x: Math.random() > 0.5 ? 40 : arcCanvas.width - 40, y: arcCanvas.height / 2,
-                    hp: ENEMY_MAX_HP * 1.5 + w * 8, maxHp: ENEMY_MAX_HP * 1.5 + w * 8,
-                    speed: ENEMY_BASE_SPEED * 2.4 + w * 0.1, angle: 0,
-                    type: 'elite_runner', r: 14, dmg: DAMAGE_PER_HIT * 1.5 + w * 2, xpDrop: 150 + w * 5, color: '#c2410c', cooldown: 0, phaseTimer: 0, dash: 0
+                    hp: ENEMY_MAX_HP * 2 + w * 15, maxHp: ENEMY_MAX_HP * 2 + w * 15,
+                    speed: ENEMY_BASE_SPEED * 2.8 + w * 0.15, angle: 0,
+                    type: 'elite_runner', r: 14, dmg: DAMAGE_PER_HIT * 1.8 + w * 3, xpDrop: 150 + w * 5, points: 150 + w * 5, color: '#c2410c', cooldown: 0, phaseTimer: 0, dash: 0
                 });
             }
         }
@@ -1224,28 +1224,28 @@ renderPreview();
                 enemies.push({
                     id: Math.random(),
                     x: ex, y: ey,
-                    hp: ENEMY_MAX_HP * 0.8 + w * 3, maxHp: ENEMY_MAX_HP * 0.8 + w * 3,
-                    speed: ENEMY_BASE_SPEED * 0.7 + w * 0.05, angle: 0,
-                    type: 'shooter', r: ENEMY_RADIUS, dmg: DAMAGE_PER_HIT, xpDrop: 20 + w * 4, color: '#0ea5e9',
-                    cooldown: Math.random() * 2000 + 1000
+                    hp: ENEMY_MAX_HP * 1.0 + w * 5, maxHp: ENEMY_MAX_HP * 1.0 + w * 5,
+                    speed: ENEMY_BASE_SPEED * 0.8 + w * 0.07, angle: 0,
+                    type: 'shooter', r: ENEMY_RADIUS, dmg: DAMAGE_PER_HIT + w * 1.2, xpDrop: 20 + w * 4, points: 50 + w * 5, color: '#0ea5e9',
+                    cooldown: Math.random() * 1500 + 800
                 });
             } else if (rnd < probShooter + probRunner && w >= 2) {
                 // Runner: Muy rápido pero frágil
                 enemies.push({
                     id: Math.random(),
                     x: ex, y: ey,
-                    hp: ENEMY_MAX_HP * 0.5 + w * 2, maxHp: ENEMY_MAX_HP * 0.5 + w * 2,
-                    speed: ENEMY_BASE_SPEED * 1.8 + w * 0.1, angle: 0,
-                    type: 'runner', r: ENEMY_RADIUS * 0.75, dmg: DAMAGE_PER_HIT * 0.75, xpDrop: 15 + w * 2, color: '#f97316'
+                    hp: ENEMY_MAX_HP * 0.6 + w * 3, maxHp: ENEMY_MAX_HP * 0.6 + w * 3,
+                    speed: ENEMY_BASE_SPEED * 2.0 + w * 0.12, angle: 0,
+                    type: 'runner', r: ENEMY_RADIUS * 0.75, dmg: DAMAGE_PER_HIT * 1.0 + w * 1.2, xpDrop: 15 + w * 2, points: 30 + w * 3, color: '#f97316'
                 });
             } else {
                 // Normal (Aumentado)
                 enemies.push({
                     id: Math.random(),
                     x: ex, y: ey,
-                    hp: ENEMY_MAX_HP + w * 8, maxHp: ENEMY_MAX_HP + w * 8, // más vida
-                    speed: ENEMY_BASE_SPEED + w * 0.15, angle: 0, // un poco más rápidos
-                    type: 'normal', r: ENEMY_RADIUS, dmg: DAMAGE_PER_HIT + w * 2, xpDrop: 15 + w * 3, color: '#ef4444' // más daño
+                    hp: ENEMY_MAX_HP + w * 12, maxHp: ENEMY_MAX_HP + w * 12, // más vida
+                    speed: ENEMY_BASE_SPEED + w * 0.2, angle: 0, // un poco más rápidos
+                    type: 'normal', r: ENEMY_RADIUS, dmg: DAMAGE_PER_HIT + w * 3, xpDrop: 15 + w * 3, points: 20 + i * 2, color: '#ef4444' // más daño
                 });
             }
         }
@@ -1483,11 +1483,11 @@ renderPreview();
                     else { e.x += (dx / len) * (spd * 1.5); e.y += (dy / len) * (spd * 1.5); }
                 } else { // twin_shooter
                     e.cooldown -= dt;
-                    if (e.cooldown <= 0 && len < 500) {
-                        e.cooldown = 1100;
-                        for (let k = -1; k <= 1; k += 2) {
-                            let a = Math.atan2(dy, dx) + k * 0.3;
-                            enemyBullets.push({ x: e.x, y: e.y, r: 6, dmg: Math.floor(e.dmg * 0.7), vx: Math.cos(a) * BULLET_SPEED * 0.8, vy: Math.sin(a) * BULLET_SPEED * 0.8 });
+                    if (e.cooldown <= 0 && len < 600) {
+                        e.cooldown = 900;
+                        for (let k = -2; k <= 2; k += 1) { // 5 bullets instead of 2
+                            let a = Math.atan2(dy, dx) + k * 0.25;
+                            enemyBullets.push({ x: e.x, y: e.y, r: 7, dmg: Math.floor(e.dmg * 0.8), vx: Math.cos(a) * BULLET_SPEED * 1.2, vy: Math.sin(a) * BULLET_SPEED * 1.2 });
                         }
                     }
                     if (len < 150) spd = -spd * 0.5; else if (len < 250) spd = 0;
@@ -1506,10 +1506,10 @@ renderPreview();
                 } else { // spread_shooter
                     e.cooldown -= dt;
                     if (e.cooldown <= 0) {
-                        e.cooldown = 1200;
-                        for (let k = 0; k < 12; k++) {
-                            let a = e.angle + (Math.PI / 6) * k;
-                            enemyBullets.push({ x: e.x, y: e.y, r: 7, dmg: Math.floor(e.dmg * 0.6), vx: Math.cos(a) * BULLET_SPEED * 0.7, vy: Math.sin(a) * BULLET_SPEED * 0.7 });
+                        e.cooldown = 1000; // faster fire rate
+                        for (let k = 0; k < 18; k++) { // 18 bullets instead of 12
+                            let a = e.angle + (Math.PI / 9) * k;
+                            enemyBullets.push({ x: e.x, y: e.y, r: 8, dmg: Math.floor(e.dmg * 0.7), vx: Math.cos(a) * BULLET_SPEED * 0.9, vy: Math.sin(a) * BULLET_SPEED * 0.9 });
                         }
                     }
                     e.x += (dx / len) * spd * 0.5; e.y += (dy / len) * spd * 0.5;
@@ -1566,6 +1566,7 @@ renderPreview();
                     for (let k = 0; k < 4; k++) particles.push(makeParticle(e.x, e.y, e.color));
 
                     if (e.hp <= 0) {
+                        score += (e.points || 10);
                         if (player.vampirism) player.hp = Math.min(player.maxHp, player.hp + player.vampirism);
                         dropXp(e.x, e.y, Math.floor(e.xpDrop * player.xpMult));
                         for (let k = 0; k < 12; k++) particles.push(makeParticle(e.x, e.y, '#facc15'));
@@ -1822,14 +1823,13 @@ renderPreview();
 
     // Guarda la puntuación actual y siempre sube al ranking global
     function saveHighScore() {
-        const realScore = meta.money; // Las monedas son la puntuación real
         const hiStr = localStorage.getItem('survivalArcHighScore');
         let hiScore = hiStr ? parseInt(hiStr) : 0;
-        if (realScore > hiScore) {
-            localStorage.setItem('survivalArcHighScore', realScore.toString());
+        if (score > hiScore) {
+            localStorage.setItem('survivalArcHighScore', score.toString());
         }
         // Siempre intentar subir al ranking global
-        saveToLeaderboard(realScore, wave);
+        saveToLeaderboard(score, wave);
     }
 
     // ── Loop principal ────────────────────────────────────────────────────────────
@@ -2003,8 +2003,8 @@ renderPreview();
                         <tr style="${isMe ? 'background: rgba(99, 102, 241, 0.15);' : ''}">
                             <td>#${i + 1}</td>
                             <td>${entry.player_name} ${isMe ? '<span style="color:var(--accent);font-size:0.75rem;margin-left:5px;">(Tú)</span>' : ''}</td>
-                            <td>${entry.score.toLocaleString()} 💰</td>
-                            <td>Ole. ${entry.wave || '?'}</td>
+                            <td>${entry.score.toLocaleString()}</td>
+                            <td>${entry.wave || '?'}</td>
                         </tr>
                     `;
                 }).join('');
@@ -2085,7 +2085,7 @@ renderPreview();
         const nameSection = document.getElementById('death-name-section');
         if (nameSection) nameSection.style.display = 'none';
         // Subir la puntuación ahora que tenemos nombre con datos reales
-        saveToLeaderboard(meta.money, wave);
+        saveToLeaderboard(score, wave);
     });
 
     document.getElementById('btn-arc-death-restart').addEventListener('click', () => {

@@ -38,6 +38,11 @@
                 <h2>Jugar</h2>
                 <p>Mejora a tu héroe, gasta tus monedas y prepárate para la batalla infinita.</p>
             </div>
+            <div class="menu-card" id="btn-goto-leaderboard">
+                <span class="card-icon">🏆</span>
+                <h2>Clasificación</h2>
+                <p>Compite por el top 10 y mira tu récord personal frente a los mejores.</p>
+            </div>
         </div>
     </div>
 
@@ -251,6 +256,43 @@
         <!-- Pista de controles -->
         <div class="controls-hint">🕹️ WASD / Flechas para mover &nbsp;|&nbsp; 🖱️ Click para disparar &nbsp;|&nbsp; ❤️
             Los enemigos te dañan al tocarte</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+     PANTALLA 5 – CLASIFICACIÓN
+     ══════════════════════════════════════════════════════════════════════════ -->
+    <div id="leaderboard" class="screen hidden">
+        <div class="leaderboard-container">
+            <div class="leaderboard-header">
+                <button class="btn-back" id="btn-leaderboard-back">← Menú</button>
+                <div class="leaderboard-title">
+                    <h2>🏆 Hall of Fame</h2>
+                    <p>Los 10 mejores supervivientes del mundo</p>
+                </div>
+            </div>
+
+            <div class="leaderboard-content">
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>POS</th>
+                            <th>JUGADOR</th>
+                            <th>PUNTUACIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Se cargará dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="user-best-section">
+                <p>Tu Mejor Puntuación</p>
+                <div class="user-best-card" id="user-best-row">
+                    <!-- Se cargará dinámicamente -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Overlay de Recompensas -->

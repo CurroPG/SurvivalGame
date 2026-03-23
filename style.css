@@ -135,6 +135,8 @@
             gap: 1.25rem;
             flex-wrap: wrap;
             justify-content: center;
+            width: 100%;
+            max-width: 800px;
         }
 
         .menu-card {
@@ -840,8 +842,15 @@
         }
 
         @keyframes reward-pop {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .reward-glow {
@@ -859,8 +868,15 @@
         }
 
         @keyframes chest-bounce {
-            0%, 100% { transform: translateY(0) rotate(0); }
-            50% { transform: translateY(-15px) rotate(5deg); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0);
+            }
+
+            50% {
+                transform: translateY(-15px) rotate(5deg);
+            }
         }
 
         .reward-content h2 {
@@ -895,24 +911,53 @@
         }
 
         @keyframes item-slide {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
-        .reward-item:nth-child(2) { animation-delay: 0.1s; }
-        .reward-item:nth-child(3) { animation-delay: 0.2s; }
-        .reward-item:nth-child(4) { animation-delay: 0.3s; }
+        .reward-item:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .reward-item:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .reward-item:nth-child(4) {
+            animation-delay: 0.3s;
+        }
 
         .chest-opening {
             animation: chest-shake 0.5s infinite;
         }
 
         @keyframes chest-shake {
-            0% { transform: translate(0) rotate(0); }
-            25% { transform: translate(2px, -2px) rotate(2deg); }
-            50% { transform: translate(-2px, 2px) rotate(-2deg); }
-            75% { transform: translate(2px, 2px) rotate(2deg); }
-            100% { transform: translate(0) rotate(0); }
+            0% {
+                transform: translate(0) rotate(0);
+            }
+
+            25% {
+                transform: translate(2px, -2px) rotate(2deg);
+            }
+
+            50% {
+                transform: translate(-2px, 2px) rotate(-2deg);
+            }
+
+            75% {
+                transform: translate(2px, 2px) rotate(2deg);
+            }
+
+            100% {
+                transform: translate(0) rotate(0);
+            }
         }
 
         .shop-main-content {
@@ -1260,4 +1305,182 @@
 
         .btn-danger:hover {
             background: rgba(239, 68, 68, .25);
+        }
+
+        /* ── Leaderboard Screen ────────────────────────────────────────────────── */
+        #leaderboard {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 2rem;
+            background: var(--bg);
+        }
+
+        .leaderboard-container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 2rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 80px rgba(99, 102, 241, 0.15);
+            animation: fadeInScale 0.4s ease-out;
+            margin: auto;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .leaderboard-header {
+            padding: 1.5rem 2rem;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .leaderboard-title h2 {
+            font-size: 1.6rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .leaderboard-content {
+            padding: 1.5rem 2rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+        }
+
+        .leaderboard-table th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .leaderboard-table tr {
+            background: var(--surface);
+            transition: transform 0.2s;
+        }
+
+        .leaderboard-table td {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .leaderboard-table td:first-child {
+            border-left: 1px solid var(--border);
+            border-top-left-radius: 0.75rem;
+            border-bottom-left-radius: 0.75rem;
+            font-weight: 800;
+            width: 70px;
+        }
+
+        .leaderboard-table td:last-child {
+            border-right: 1px solid var(--border);
+            border-top-right-radius: 0.75rem;
+            border-bottom-right-radius: 0.75rem;
+            text-align: right;
+            color: #facc15;
+            font-weight: 700;
+        }
+
+        /* Top 3 styles */
+        .leaderboard-table tr:nth-child(1) td:first-child {
+            color: #fbbf24;
+            font-size: 1.25rem;
+        }
+
+        .leaderboard-table tr:nth-child(2) td:first-child {
+            color: #94a3b8;
+            font-size: 1.15rem;
+        }
+
+        .leaderboard-table tr:nth-child(3) td:first-child {
+            color: #b45309;
+            font-size: 1.05rem;
+        }
+
+        .leaderboard-table tr:hover {
+            transform: scale(1.01);
+            background: var(--border);
+        }
+
+        .user-best-section {
+            padding: 1.5rem 2rem;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .user-best-section p {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .user-best-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+            border: 2px solid var(--accent);
+            border-radius: 1.25rem;
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+            animation: pulseGlow 2s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            from {
+                box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+            }
+
+            to {
+                box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+            }
+        }
+
+        .user-best-card .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .user-best-card .user-score {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #facc15;
         }

@@ -26,6 +26,7 @@ const screens = {
     game: document.getElementById('game'),
     info: document.getElementById('info'),
     shop: document.getElementById('shop'),
+    leaderboard: document.getElementById('leaderboard'),
 };
 
 function showScreen(name, direction = 'right') {
@@ -48,6 +49,12 @@ document.getElementById('btn-info-back').addEventListener('click', () => { arcad
 document.getElementById('btn-game-back').addEventListener('click', () => { stopGame(); showScreen('menu', 'left'); });
 document.getElementById('btn-shop-back').addEventListener('click', () => showScreen('menu', 'left'));
 document.getElementById('btn-start-arcade').addEventListener('click', () => showScreen('info'));
+
+document.getElementById('btn-goto-leaderboard').addEventListener('click', () => {
+    showScreen('leaderboard');
+    renderLeaderboard();
+});
+document.getElementById('btn-leaderboard-back').addEventListener('click', () => showScreen('menu', 'left'));
 
 // ── Sliders de configuración ──────────────────────────────────────────────────
 function bindSlider(sliderId, valueId) {
@@ -1434,9 +1441,10 @@ renderPreview();
                         Sfx.play('death');
 
                         // Ya no se ganan monedas tras jugar una partida
-                        grantRandomChest();
-                        saveMeta();
-                    }
+                         grantRandomChest();
+                         saveHighScore(); 
+                         saveMeta();
+                     }
                     break;
                 }
             }
@@ -1681,6 +1689,7 @@ renderPreview();
         let hiScore = hiStr ? parseInt(hiStr) : 0;
         if (score > hiScore) {
             localStorage.setItem('survivalArcHighScore', score.toString());
+            saveToLeaderboard(score);
         }
     }
 
@@ -1798,5 +1807,66 @@ renderPreview();
             }
         }
     });
+
+    // ── Clasificación ────────────────────────────────────────────────────────────
+    function initLeaderboard() {
+        const lb = localStorage.getItem('survival_leaderboard');
+        if (!lb) {
+            const mockScores = [
+                { name: 'Alex Super', score: 25000 },
+                { name: 'Elite Hunter', score: 21000 },
+                { name: 'Shadow Ghost', score: 18500 },
+                { name: 'Pro Survivor', score: 15000 },
+                { name: 'Vikingr', score: 12400 },
+                { name: 'NoobMaster69', score: 9800 },
+                { name: 'Dark Knight', score: 8200 },
+                { name: 'Lone Wolf', score: 7100 },
+                { name: 'Iron Will', score: 5500 },
+                { name: 'CurroPG', score: 4200 }
+            ];
+            localStorage.setItem('survival_leaderboard', JSON.stringify(mockScores));
+        }
+    }
+
+    function saveToLeaderboard(newScore) {
+        initLeaderboard();
+        let lb = JSON.parse(localStorage.getItem('survival_leaderboard') || '[]');
+        lb.push({ name: 'Jugador (Tú)', score: newScore, isUser: true });
+        // Ordenar y limitar a top 100 por si acaso, aunque mostremos 10
+        lb.sort((a, b) => b.score - a.score);
+        lb = lb.slice(0, 100); 
+        localStorage.setItem('survival_leaderboard', JSON.stringify(lb));
+    }
+
+    function renderLeaderboard() {
+        initLeaderboard();
+        const lb = JSON.parse(localStorage.getItem('survival_leaderboard') || '[]');
+        const body = document.getElementById('leaderboard-body');
+        const userBestRow = document.getElementById('user-best-row');
+        
+        // Top 10
+        const top10 = lb.slice(0, 10);
+        body.innerHTML = top10.map((entry, i) => `
+            <tr>
+                <td>#${i + 1}</td>
+                <td>${entry.name} ${entry.isUser ? '<span style="color:var(--accent);font-size:0.75rem">(Tú)</span>' : ''}</td>
+                <td>${entry.score.toLocaleString()}</td>
+            </tr>
+        `).join('');
+
+        // Mi mejor puntuación (la más alta de 'isUser: true' o el hiScore local)
+        const hiStr = localStorage.getItem('survivalArcHighScore');
+        const hiScore = hiStr ? parseInt(hiStr) : 0;
+        
+        userBestRow.innerHTML = `
+            <div class="user-info">
+                <span>🏆</span>
+                <span>Jugador (Tú)</span>
+            </div>
+            <div class="user-score">${hiScore.toLocaleString()}</div>
+        `;
+    }
+
+    initLeaderboard();
 
 })(); // fin IIFE mini-juego

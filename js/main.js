@@ -1822,13 +1822,14 @@ renderPreview();
 
     // Guarda la puntuación actual y siempre sube al ranking global
     function saveHighScore() {
+        const realScore = meta.money; // Las monedas son la puntuación real
         const hiStr = localStorage.getItem('survivalArcHighScore');
         let hiScore = hiStr ? parseInt(hiStr) : 0;
-        if (score > hiScore) {
-            localStorage.setItem('survivalArcHighScore', score.toString());
+        if (realScore > hiScore) {
+            localStorage.setItem('survivalArcHighScore', realScore.toString());
         }
-        // Siempre intentar subir al ranking global (no solo récords)
-        saveToLeaderboard(score);
+        // Siempre intentar subir al ranking global
+        saveToLeaderboard(realScore, wave);
     }
 
     // ── Loop principal ────────────────────────────────────────────────────────────
@@ -1946,32 +1947,17 @@ renderPreview();
         // La tabla ya está configurada en la base de datos
     }
 
-    async function saveToLeaderboard(newScore) {
+    async function saveToLeaderboard(newScore, newWave) {
         if (!sbClient) return;
-        
+        const playerName = localStorage.getItem('survivalPlayerName');
+        if (!playerName) {
+            // Sin nombre todavía: se subirá cuando el usuario pulse Guardar en el death screen
+            return;
+        }
         try {
-            let playerName = localStorage.getItem('survivalPlayerName');
-            if (!playerName) {
-                // Dar tiempo a la interfaz para mostrar la pantalla de muerte
-                setTimeout(async () => {
-                    playerName = prompt("¡Nuevo récord global! Ingresa tu nombre:", "Sobreviviente");
-                    if (!playerName || playerName.trim() === '') {
-                        playerName = "Sobreviviente_" + Math.floor(Math.random() * 1000);
-                    }
-                    localStorage.setItem('survivalPlayerName', playerName);
-                    
-                    const { error } = await sbClient
-                        .from('leaderboard')
-                        .insert([{ player_name: playerName, score: newScore }]);
-                    if (error) console.error('Supabase Insert Error:', error);
-                }, 800);
-                return;
-            }
-
             const { error } = await sbClient
                 .from('leaderboard')
-                .insert([{ player_name: playerName, score: newScore }]);
-                
+                .insert([{ player_name: playerName, score: newScore, wave: newWave || 1 }]);
             if (error) console.error('Supabase Insert Error:', error);
         } catch (err) {
             console.error('Leaderboard error:', err);
@@ -2012,13 +1998,13 @@ renderPreview();
             
             if (data && data.length > 0) {
                 body.innerHTML = data.map((entry, i) => {
-                    // Resaltar si es el jugador actual basado en nombre exacto y score aproximado
                     const isMe = entry.player_name === myName && entry.score === hiScore;
                     return `
                         <tr style="${isMe ? 'background: rgba(99, 102, 241, 0.15);' : ''}">
                             <td>#${i + 1}</td>
                             <td>${entry.player_name} ${isMe ? '<span style="color:var(--accent);font-size:0.75rem;margin-left:5px;">(Tú)</span>' : ''}</td>
-                            <td>${entry.score.toLocaleString()}</td>
+                            <td>${entry.score.toLocaleString()} 💰</td>
+                            <td>Ole. ${entry.wave || '?'}</td>
                         </tr>
                     `;
                 }).join('');
@@ -2098,8 +2084,8 @@ renderPreview();
         localStorage.setItem('survivalPlayerName', name);
         const nameSection = document.getElementById('death-name-section');
         if (nameSection) nameSection.style.display = 'none';
-        // Subir la puntuación ahora que tenemos nombre
-        saveToLeaderboard(score);
+        // Subir la puntuación ahora que tenemos nombre con datos reales
+        saveToLeaderboard(meta.money, wave);
     });
 
     document.getElementById('btn-arc-death-restart').addEventListener('click', () => {

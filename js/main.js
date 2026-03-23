@@ -1950,17 +1950,36 @@ renderPreview();
     async function saveToLeaderboard(newScore, newWave) {
         if (!sbClient) return;
         const playerName = localStorage.getItem('survivalPlayerName');
-        if (!playerName) {
-            // Sin nombre todavía: se subirá cuando el usuario pulse Guardar en el death screen
-            return;
-        }
+        if (!playerName) return;
+
         try {
-            const { error } = await sbClient
+            // 1. Buscar la entrada más alta de este jugador
+            const { data: existingList, error: selectError } = await sbClient
                 .from('leaderboard')
-                .insert([{ player_name: playerName, score: newScore, wave: newWave || 1 }]);
-            if (error) console.error('Supabase Insert Error:', error);
+                .select('*')
+                .eq('player_name', playerName)
+                .order('score', { ascending: false });
+
+            if (selectError) throw selectError;
+
+            if (existingList && existingList.length > 0) {
+                const bestEntry = existingList[0];
+                // 2. Si el nuevo score es mejor, actualizamos la mejor entrada existente
+                if (newScore > bestEntry.score) {
+                    await sbClient
+                        .from('leaderboard')
+                        .update({ score: newScore, wave: newWave || 1 })
+                        .eq('id', bestEntry.id);
+                }
+                // Si había más de una entrada (duplicados antiguos), el ranking global se limpia solo al mostrar el Top 10 mejorado
+            } else {
+                // 3. Si no existe, insertar nueva entrada
+                await sbClient
+                    .from('leaderboard')
+                    .insert([{ player_name: playerName, score: newScore, wave: newWave || 1 }]);
+            }
         } catch (err) {
-            console.error('Leaderboard error:', err);
+            console.error('Leaderboard sync error:', err);
         }
     }
 

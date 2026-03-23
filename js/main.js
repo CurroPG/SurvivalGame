@@ -1868,5 +1868,6 @@ renderPreview();
     }
 
     initLeaderboard();
+    window.renderLeaderboard = renderLeaderboard;
 
 })(); // fin IIFE mini-juego

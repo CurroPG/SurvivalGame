@@ -38,7 +38,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: opacity .35s ease, transform .35s ease;
+            transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1), transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
             background: var(--bg);
             /* Asegura que cada pantalla sea opaca */
         }
@@ -98,6 +98,8 @@
         #menu {
             z-index: 10;
             gap: 2.5rem;
+            background: rgba(8, 12, 20, 0.4); /* Make background transparent to see particles and sim */
+            backdrop-filter: blur(2px);
         }
 
         .logo-big {
@@ -1599,4 +1601,112 @@
             padding: 1rem 2rem;
             font-size: 1.1rem;
             font-weight: 800;
+        }
+
+        /* ── Transitions & Menu Sim Canvas ────────────────────────────────────────── */
+        #menu-sim-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Detrás del menú (z-index: 10) pero delante de particles (0) */
+            opacity: 0.25; 
+            pointer-events: none;
+        }
+
+        #transition-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(8, 12, 20, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            pointer-events: all;
+        }
+
+        .transition-character {
+            position: absolute;
+            top: 50%;
+            left: -150px; /* starts offscreen left */
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: var(--green);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--green);
+            /* Apariencia de jugador de arco */
+        }
+        .transition-character::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 15px;
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .transition-projectile {
+            position: absolute;
+            left: calc(40% + 60px); /* 40% + 40px (half char) + 20px (weapon) */
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 40px;
+            background: linear-gradient(90deg, transparent, #fbbf24, #fff);
+            box-shadow: 0 0 40px #fbbf24;
+            border-radius: 20px;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1001;
+        }
+
+        .transition-flash {
+            position: absolute;
+            inset: 0;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1002;
+        }
+
+        /* Animaciones disparadas por JS al padre #transition-overlay */
+        #transition-overlay.animating {
+            display: block; /* Asegura que ignora .hidden si se la quitan pero igual lo configuramos en JS */
+        }
+
+        #transition-overlay.animating .transition-character {
+            animation: slideInCharLeft 1s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #transition-overlay.animating .transition-projectile {
+            animation: shootLaser 0.6s 0.4s forwards cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        #transition-overlay.animating .transition-flash {
+            animation: ultimateFlash 0.5s 0.5s forwards ease-in-out;
+        }
+
+        @keyframes slideInCharLeft {
+            0% { left: -150px; }
+            30% { left: 40%; }
+            80% { left: 40%; }
+            100% { left: -150px; }
+        }
+
+        @keyframes shootLaser {
+
+            0% { opacity: 1; width: 0; transform: translateY(-50%) translateX(0); }
+            50% { opacity: 1; width: 100vw; transform: translateY(-50%) translateX(0); }
+            100% { opacity: 0; width: 100vw; transform: translateY(-50%) translateX(100vw); }
+        }
+
+        @keyframes ultimateFlash {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
         }

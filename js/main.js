@@ -32,29 +32,190 @@ const screens = {
 function showScreen(name, direction = 'right') {
     const inClass = direction === 'right' ? 'slide-right' : 'slide-left';
     Object.entries(screens).forEach(([k, s]) => {
+        if (!s) return;
         if (k === name) {
             s.classList.remove('hidden', inClass);
         } else {
             s.classList.add('hidden');
         }
     });
-    if (name === 'info') arcadeStart();
+    // Start arcade for game/info screens
+    if (name === 'info' || name === 'game' || name === 'arcade') arcadeStart();
     else arcadeStop();
 }
 
-document.getElementById('btn-goto-config').addEventListener('click', () => showScreen('config'));
-document.getElementById('btn-goto-shop').addEventListener('click', () => { showScreen('shop'); updateShopUI(); });
-document.getElementById('btn-config-back').addEventListener('click', () => showScreen('menu', 'left'));
-document.getElementById('btn-info-back').addEventListener('click', () => { arcadeStop(); showScreen('shop', 'left'); });
-document.getElementById('btn-game-back').addEventListener('click', () => { stopGame(); showScreen('menu', 'left'); });
-document.getElementById('btn-shop-back').addEventListener('click', () => showScreen('menu', 'left'));
-document.getElementById('btn-start-arcade').addEventListener('click', () => showScreen('info'));
+function safeBindClick(id, callback) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', callback);
+}
 
-document.getElementById('btn-goto-leaderboard').addEventListener('click', () => {
-    showScreen('leaderboard');
-    renderLeaderboard();
+safeBindClick('btn-goto-config', () => showScreen('config'));
+
+// ── Animación de Jugar (Tienda) ───────────────────────────────────────────────
+safeBindClick('btn-goto-shop', () => { 
+    const overlay = document.getElementById('transition-overlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        void overlay.offsetWidth; 
+        overlay.classList.add('animating');
+    }
+    
+    if (window.Sfx) {
+        setTimeout(() => window.Sfx.play('shoot'), 400); 
+        setTimeout(() => window.Sfx.play('hit'), 500); 
+    }
+    
+    setTimeout(() => {
+        showScreen('shop'); 
+        if (typeof updateShopUI === 'function') updateShopUI();
+    }, 600); // Wipe central
+    
+    setTimeout(() => {
+        if (overlay) {
+            overlay.classList.remove('animating');
+            overlay.classList.add('hidden');
+        }
+    }, 1200); // Fin de la animación
 });
-document.getElementById('btn-leaderboard-back').addEventListener('click', () => showScreen('menu', 'left'));
+
+safeBindClick('btn-config-back', () => showScreen('menu', 'left'));
+safeBindClick('btn-info-back', () => { arcadeStop(); showScreen('shop', 'left'); });
+safeBindClick('btn-game-back', () => { stopGame(); showScreen('menu', 'left'); });
+safeBindClick('btn-shop-back', () => showScreen('menu', 'left'));
+safeBindClick('btn-start-arcade', () => {
+    // Si la ID 'game' existe en screens, cargar 'game', sino probar 'info'
+    if (screens.game) showScreen('game');
+    else showScreen('info'); 
+});
+
+safeBindClick('btn-goto-leaderboard', () => {
+    showScreen('leaderboard');
+    if (typeof renderLeaderboard === 'function') renderLeaderboard();
+});
+safeBindClick('btn-leaderboard-back', () => showScreen('menu', 'left'));
+
+// ── Simulación de Fondo en el Menú ────────────────────────────────────────────
+const menuSimCanvas = document.getElementById('menu-sim-canvas');
+const menuSimCtx = menuSimCanvas ? menuSimCanvas.getContext('2d') : null;
+let simRAF = null;
+let simEnemies = [];
+let simBullets = [];
+let simTick = 0;
+
+function initMenuSim() {
+    if (!menuSimCanvas) return;
+    menuSimCanvas.width = window.innerWidth;
+    menuSimCanvas.height = window.innerHeight;
+    simEnemies = [];
+    simBullets = [];
+    simTick = 0;
+}
+
+function menuSimLoop() {
+    if (!menuSimCanvas || document.getElementById('menu').classList.contains('hidden')) {
+        simRAF = requestAnimationFrame(menuSimLoop);
+        return;
+    }
+    
+    simTick++;
+    const cx = menuSimCanvas.width / 2;
+    const cy = menuSimCanvas.height / 2;
+    
+    if (Math.random() < 0.03 && simEnemies.length < 12) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.max(cx, cy) + 50;
+        simEnemies.push({
+            x: cx + Math.cos(angle) * dist,
+            y: cy + Math.sin(angle) * dist,
+            hp: Math.random() < 0.2 ? 3 : 1,
+            speed: 1 + Math.random() * 1.5,
+            color: Math.random() < 0.1 ? '#fbbf24' : '#ef4444' 
+        });
+    }
+    
+    if (simTick % 40 === 0 && simEnemies.length > 0) {
+        let nearest = simEnemies[0];
+        let minDist = Infinity;
+        for (let e of simEnemies) {
+            const d = Math.hypot(e.x - cx, e.y - cy);
+            if (d < minDist) { minDist = d; nearest = e; }
+        }
+        if (nearest) {
+            const a = Math.atan2(nearest.y - cy, nearest.x - cx);
+            simBullets.push({ x: cx, y: cy, vx: Math.cos(a) * 12, vy: Math.sin(a) * 12 });
+        }
+    }
+    
+    menuSimCtx.clearRect(0, 0, menuSimCanvas.width, menuSimCanvas.height);
+    
+    menuSimCtx.shadowBlur = 15;
+    menuSimCtx.shadowColor = '#22c55e';
+    menuSimCtx.fillStyle = '#22c55e';
+    menuSimCtx.beginPath(); menuSimCtx.arc(cx, cy, 18, 0, Math.PI * 2); menuSimCtx.fill();
+    menuSimCtx.shadowBlur = 0;
+    
+    menuSimCtx.fillStyle = '#fbbf24';
+    for (let i = simBullets.length - 1; i >= 0; i--) {
+        let b = simBullets[i];
+        b.x += b.vx; b.y += b.vy;
+        menuSimCtx.beginPath(); menuSimCtx.arc(b.x, b.y, 5, 0, Math.PI * 2); menuSimCtx.fill();
+        if (b.x < 0 || b.x > menuSimCanvas.width || b.y < 0 || b.y > menuSimCanvas.height) {
+            simBullets.splice(i, 1);
+        } else {
+            for (let j = simEnemies.length - 1; j >= 0; j--) {
+                let e = simEnemies[j];
+                if (Math.hypot(b.x - e.x, b.y - e.y) < 14 + 5) {
+                    e.hp--;
+                    simBullets.splice(i, 1);
+                    break;
+                }
+            }
+        }
+    }
+    
+    for (let i = simEnemies.length - 1; i >= 0; i--) {
+        let e = simEnemies[i];
+        if (e.hp <= 0) {
+            simEnemies.splice(i, 1);
+            continue;
+        }
+        const dx = cx - e.x, dy = cy - e.y;
+        const dist = Math.hypot(dx, dy);
+        e.x += (dx / dist) * e.speed;
+        e.y += (dy / dist) * e.speed;
+        
+        menuSimCtx.shadowColor = e.color;
+        menuSimCtx.shadowBlur = 10;
+        menuSimCtx.fillStyle = e.color;
+        menuSimCtx.beginPath(); menuSimCtx.arc(e.x, e.y, 14, 0, Math.PI * 2); menuSimCtx.fill();
+        menuSimCtx.shadowBlur = 0;
+        
+        if (dist < 18 + 14) {
+            const angle = Math.random() * Math.PI * 2;
+            const newDist = Math.max(cx, cy) + 50;
+            e.x = cx + Math.cos(angle) * newDist;
+            e.y = cy + Math.sin(angle) * newDist;
+        }
+    }
+    
+    simRAF = requestAnimationFrame(menuSimLoop);
+}
+
+if (menuSimCanvas) {
+    window.addEventListener('resize', initMenuSim);
+    initMenuSim();
+    simRAF = requestAnimationFrame(menuSimLoop);
+}
+
+// ── Supabase Setup ────────────────────────────────────────────────────────────
+const _supabaseUrl = 'https://ovybbobxlamapbyvputc.supabase.co';
+const _supabaseKey = 'sb_publishable_mO4qLVaJdMonv3k3ynoA9A_ZK3l0k8c';
+let sbClient = null;
+try {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+        sbClient = window.supabase.createClient(_supabaseUrl, _supabaseKey);
+    }
+} catch(e) { console.warn('Supabase init failed:', e); }
 
 // ── Sliders de configuración ──────────────────────────────────────────────────
 function bindSlider(sliderId, valueId) {
@@ -1783,62 +1944,94 @@ renderPreview();
     });
 
     // ── Clasificación ────────────────────────────────────────────────────────────
+    // ── Clasificación Global (Supabase) ──────────────────────────────────────────
     function initLeaderboard() {
-        const lb = localStorage.getItem('survival_leaderboard');
-        if (!lb) {
-            const mockScores = [
-                { name: 'Alex Super', score: 25000 },
-                { name: 'Elite Hunter', score: 21000 },
-                { name: 'Shadow Ghost', score: 18500 },
-                { name: 'Pro Survivor', score: 15000 },
-                { name: 'Vikingr', score: 12400 },
-                { name: 'NoobMaster69', score: 9800 },
-                { name: 'Dark Knight', score: 8200 },
-                { name: 'Lone Wolf', score: 7100 },
-                { name: 'Iron Will', score: 5500 },
-                { name: 'CurroPG', score: 4200 }
-            ];
-            localStorage.setItem('survival_leaderboard', JSON.stringify(mockScores));
+        // La tabla ya está configurada en la base de datos
+    }
+
+    async function saveToLeaderboard(newScore) {
+        if (!sbClient) return;
+        
+        try {
+            let playerName = localStorage.getItem('survivalPlayerName');
+            if (!playerName) {
+                // Dar tiempo a la interfaz para mostrar la pantalla de muerte
+                setTimeout(async () => {
+                    playerName = prompt("¡Nuevo récord global! Ingresa tu nombre:", "Sobreviviente");
+                    if (!playerName || playerName.trim() === '') {
+                        playerName = "Sobreviviente_" + Math.floor(Math.random() * 1000);
+                    }
+                    localStorage.setItem('survivalPlayerName', playerName);
+                    
+                    const { error } = await sbClient
+                        .from('leaderboard')
+                        .insert([{ player_name: playerName, score: newScore }]);
+                    if (error) console.error('Supabase Insert Error:', error);
+                }, 800);
+                return;
+            }
+
+            const { error } = await sbClient
+                .from('leaderboard')
+                .insert([{ player_name: playerName, score: newScore }]);
+                
+            if (error) console.error('Supabase Insert Error:', error);
+        } catch (err) {
+            console.error('Leaderboard error:', err);
         }
     }
 
-    function saveToLeaderboard(newScore) {
-        initLeaderboard();
-        let lb = JSON.parse(localStorage.getItem('survival_leaderboard') || '[]');
-        lb.push({ name: 'Jugador (Tú)', score: newScore, isUser: true });
-        // Ordenar y limitar a top 100 por si acaso, aunque mostremos 10
-        lb.sort((a, b) => b.score - a.score);
-        lb = lb.slice(0, 100); 
-        localStorage.setItem('survival_leaderboard', JSON.stringify(lb));
-    }
-
-    function renderLeaderboard() {
-        initLeaderboard();
-        const lb = JSON.parse(localStorage.getItem('survival_leaderboard') || '[]');
+    async function renderLeaderboard() {
         const body = document.getElementById('leaderboard-body');
         const userBestRow = document.getElementById('user-best-row');
         
-        // Top 10
-        const top10 = lb.slice(0, 10);
-        body.innerHTML = top10.map((entry, i) => `
-            <tr>
-                <td>#${i + 1}</td>
-                <td>${entry.name} ${entry.isUser ? '<span style="color:var(--accent);font-size:0.75rem">(Tú)</span>' : ''}</td>
-                <td>${entry.score.toLocaleString()}</td>
-            </tr>
-        `).join('');
-
-        // Mi mejor puntuación (la más alta de 'isUser: true' o el hiScore local)
+        body.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 2rem;">Cargando clasificación global... 🌍</td></tr>';
+        
         const hiStr = localStorage.getItem('survivalArcHighScore');
         const hiScore = hiStr ? parseInt(hiStr) : 0;
+        const myName = localStorage.getItem('survivalPlayerName') || 'Tú';
         
         userBestRow.innerHTML = `
             <div class="user-info">
                 <span>🏆</span>
-                <span>Jugador (Tú)</span>
+                <span>${myName}</span>
             </div>
             <div class="user-score">${hiScore.toLocaleString()}</div>
         `;
+
+        if (!sbClient) {
+            body.innerHTML = '<tr><td colspan="3" style="text-align:center; color: #ef4444;">Error conectando con los servidores ❌</td></tr>';
+            return;
+        }
+
+        try {
+            const { data, error } = await sbClient
+                .from('leaderboard')
+                .select('*')
+                .order('score', { ascending: false })
+                .limit(10);
+                
+            if (error) throw error;
+            
+            if (data && data.length > 0) {
+                body.innerHTML = data.map((entry, i) => {
+                    // Resaltar si es el jugador actual basado en nombre exacto y score aproximado
+                    const isMe = entry.player_name === myName && entry.score === hiScore;
+                    return `
+                        <tr style="${isMe ? 'background: rgba(99, 102, 241, 0.15);' : ''}">
+                            <td>#${i + 1}</td>
+                            <td>${entry.player_name} ${isMe ? '<span style="color:var(--accent);font-size:0.75rem;margin-left:5px;">(Tú)</span>' : ''}</td>
+                            <td>${entry.score.toLocaleString()}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                body.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 1rem;">La clasificación está vacía.<br>¡Juega para ser el primero!</td></tr>';
+            }
+        } catch (err) {
+            console.error('Load Leaderboard Error:', err);
+            body.innerHTML = '<tr><td colspan="3" style="text-align:center; color: #ef4444;">Error de red al cargar top 10</td></tr>';
+        }
     }
 
     // ── Lógica de Pausa y Muerte ────────────────────────────────────────────────

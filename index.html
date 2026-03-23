@@ -16,6 +16,7 @@
 
     <!-- Fondo animado -->
     <div id="particles"></div>
+    <canvas id="menu-sim-canvas"></canvas>
 
     <!-- ══════════════════════════════════════════════════════════════════════════
      PANTALLA 1 – MENÚ PRINCIPAL
@@ -338,6 +339,15 @@
         </div>
     </div>
 
+    <!-- Animación de Transición de Tiro -->
+    <div id="transition-overlay" class="hidden">
+        <div class="transition-flash"></div>
+        <div class="transition-projectile"></div>
+        <div class="transition-character"></div>
+    </div>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/main.js"></script>
 </body>
 

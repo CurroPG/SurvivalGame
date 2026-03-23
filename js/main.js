@@ -50,24 +50,24 @@ function safeBindClick(id, callback) {
 safeBindClick('btn-goto-config', () => showScreen('config'));
 
 // ── Animación de Jugar (Tienda) ───────────────────────────────────────────────
-safeBindClick('btn-goto-shop', () => { 
+safeBindClick('btn-goto-shop', () => {
     const overlay = document.getElementById('transition-overlay');
     if (overlay) {
         overlay.classList.remove('hidden');
-        void overlay.offsetWidth; 
+        void overlay.offsetWidth;
         overlay.classList.add('animating');
     }
-    
+
     if (window.Sfx) {
-        setTimeout(() => window.Sfx.play('shoot'), 400); 
-        setTimeout(() => window.Sfx.play('hit'), 500); 
+        setTimeout(() => window.Sfx.play('shoot'), 400);
+        setTimeout(() => window.Sfx.play('hit'), 500);
     }
-    
+
     setTimeout(() => {
-        showScreen('shop'); 
+        showScreen('shop');
         if (typeof updateShopUI === 'function') updateShopUI();
     }, 600); // Wipe central
-    
+
     setTimeout(() => {
         if (overlay) {
             overlay.classList.remove('animating');
@@ -86,6 +86,130 @@ safeBindClick('btn-goto-leaderboard', () => {
 });
 safeBindClick('btn-leaderboard-back', () => showScreen('menu', 'left'));
 
+// ── Fondo Visual (Mini-Simulación decorativa) ────────────────────────────────
+const menuSimCanvas = document.getElementById('menu-sim-canvas');
+const menuSimCtx = menuSimCanvas ? menuSimCanvas.getContext('2d') : null;
+let simRAF = null;
+let simEnemies = [];
+let simBullets = [];
+let simTick = 0;
+
+function initVisualBackground() {
+    if (!menuSimCanvas) return;
+    menuSimCanvas.width = window.innerWidth;
+    menuSimCanvas.height = window.innerHeight;
+    simEnemies = [];
+    simBullets = [];
+    simTick = 0;
+}
+
+function visualBackgroundLoop() {
+    // Solo se ve si estamos en el menú o en la tienda
+    const isMenuHidden = document.getElementById('menu').classList.contains('hidden');
+    const isShopHidden = document.getElementById('shop').classList.contains('hidden');
+
+    if (!menuSimCanvas || (isMenuHidden && isShopHidden)) {
+        simRAF = requestAnimationFrame(visualBackgroundLoop);
+        return;
+    }
+
+    simTick++;
+    const cx = menuSimCanvas.width / 2;
+    const cy = menuSimCanvas.height / 2;
+
+    // Spawn de enemigos decorativos
+    if (Math.random() < 0.03 && simEnemies.length < 15) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.max(cx, cy) + 50;
+        simEnemies.push({
+            x: cx + Math.cos(angle) * dist,
+            y: cy + Math.sin(angle) * dist,
+            hp: Math.random() < 0.2 ? 3 : 1,
+            speed: 1 + Math.random() * 1.5,
+            color: Math.random() < 0.1 ? '#fbbf24' : '#ef4444'
+        });
+    }
+
+    // Disparo automático del centro
+    if (simTick % 40 === 0 && simEnemies.length > 0) {
+        let nearest = simEnemies[0];
+        let minDist = Infinity;
+        for (let e of simEnemies) {
+            const d = Math.hypot(e.x - cx, e.y - cy);
+            if (d < minDist) { minDist = d; nearest = e; }
+        }
+        if (nearest) {
+            const a = Math.atan2(nearest.y - cy, nearest.x - cx);
+            simBullets.push({ x: cx, y: cy, vx: Math.cos(a) * 12, vy: Math.sin(a) * 12 });
+        }
+    }
+
+    menuSimCtx.clearRect(0, 0, menuSimCanvas.width, menuSimCanvas.height);
+
+    // Dibujar base central
+    menuSimCtx.shadowBlur = 15;
+    menuSimCtx.shadowColor = '#22c55e';
+    menuSimCtx.fillStyle = '#22c55e';
+    menuSimCtx.beginPath(); menuSimCtx.arc(cx, cy, 18, 0, Math.PI * 2); menuSimCtx.fill();
+    menuSimCtx.shadowBlur = 0;
+
+    // Balas
+    menuSimCtx.fillStyle = '#fbbf24';
+    for (let i = simBullets.length - 1; i >= 0; i--) {
+        let b = simBullets[i];
+        b.x += b.vx; b.y += b.vy;
+        menuSimCtx.beginPath(); menuSimCtx.arc(b.x, b.y, 5, 0, Math.PI * 2); menuSimCtx.fill();
+        if (b.x < 0 || b.x > menuSimCanvas.width || b.y < 0 || b.y > menuSimCanvas.height) {
+            simBullets.splice(i, 1);
+        } else {
+            for (let j = simEnemies.length - 1; j >= 0; j--) {
+                let e = simEnemies[j];
+                if (Math.hypot(b.x - e.x, b.y - e.y) < 14 + 5) {
+                    e.hp--;
+                    simBullets.splice(i, 1);
+                    break;
+                }
+            }
+        }
+    }
+
+    // Enemigos
+    for (let i = simEnemies.length - 1; i >= 0; i--) {
+        let e = simEnemies[i];
+        if (e.hp <= 0) {
+            simEnemies.splice(i, 1);
+            continue;
+        }
+        const dx = cx - e.x, dy = cy - e.y;
+        const dist = Math.hypot(dx, dy);
+        e.x += (dx / dist) * e.speed;
+        e.y += (dy / dist) * e.speed;
+
+        menuSimCtx.shadowColor = e.color;
+        menuSimCtx.shadowBlur = 10;
+        menuSimCtx.fillStyle = e.color;
+        menuSimCtx.beginPath(); menuSimCtx.arc(e.x, e.y, 14, 0, Math.PI * 2); menuSimCtx.fill();
+        menuSimCtx.shadowBlur = 0;
+
+        if (dist < 18 + 14) {
+            // Reposicionar en vez de matar para que el fondo sea infinito
+            const angle = Math.random() * Math.PI * 2;
+            const newDist = Math.max(cx, cy) + 50;
+            e.x = cx + Math.cos(angle) * newDist;
+            e.y = cy + Math.sin(angle) * newDist;
+            e.hp = 1;
+        }
+    }
+
+    simRAF = requestAnimationFrame(visualBackgroundLoop);
+}
+
+if (menuSimCanvas) {
+    window.addEventListener('resize', initVisualBackground);
+    initVisualBackground();
+    simRAF = requestAnimationFrame(visualBackgroundLoop);
+}
+
 safeBindClick('btn-info-back', () => { arcadeStop(); showScreen('shop', 'left'); });
 
 // ── Supabase Setup ────────────────────────────────────────────────────────────
@@ -96,38 +220,38 @@ try {
     if (window.supabase && typeof window.supabase.createClient === 'function') {
         sbClient = window.supabase.createClient(_supabaseUrl, _supabaseKey);
     }
-} catch(e) { console.warn('Supabase init failed:', e); }
+} catch (e) { console.warn('Supabase init failed:', e); }
 
 
 
 // ── Meta Progresión ────────────────────────────────────────────────────────
 // ── Chests & Rewards ────────────────────────────────────────────────────────
 const CHEST_TYPES = [
-    { id: 'wooden', name: 'Cofre de Madera', icon: '📦', time: 1000 * 60 * 5, minMoney: 10, maxMoney: 30, skinProb: 0.02, powerProb: 0.01, upgradeProb: 0.1, color: '#8b4513' },
-    { id: 'silver', name: 'Cofre de Plata', icon: '🥈', time: 1000 * 60 * 30, minMoney: 30, maxMoney: 80, skinProb: 0.05, powerProb: 0.03, upgradeProb: 0.2, color: '#c0c0c0' },
-    { id: 'golden', name: 'Cofre de Oro', icon: '🥇', time: 1000 * 60 * 60 * 2, minMoney: 100, maxMoney: 250, skinProb: 0.12, powerProb: 0.08, upgradeProb: 0.4, color: '#ffd700' },
-    { id: 'epic', name: 'Cofre Épico', icon: '💎', time: 1000 * 60 * 60 * 8, minMoney: 300, maxMoney: 800, skinProb: 0.25, powerProb: 0.15, upgradeProb: 0.7, color: '#a855f7' },
-    { id: 'legendary', name: 'Cofre Legendario', icon: '⭐', time: 1000 * 60 * 60 * 24, minMoney: 1000, maxMoney: 2500, skinProb: 0.60, powerProb: 0.40, upgradeProb: 1.0, color: '#ef4444' }
+    { id: 'wooden', name: 'Wooden Chest', icon: '📦', time: 1000 * 60 * 5, minMoney: 10, maxMoney: 30, skinProb: 0.02, powerProb: 0.01, upgradeProb: 0.1, color: '#8b4513' },
+    { id: 'silver', name: 'Silver Chest', icon: '🥈', time: 1000 * 60 * 30, minMoney: 30, maxMoney: 80, skinProb: 0.05, powerProb: 0.03, upgradeProb: 0.2, color: '#c0c0c0' },
+    { id: 'golden', name: 'Golden Chest', icon: '🥇', time: 1000 * 60 * 60 * 2, minMoney: 100, maxMoney: 250, skinProb: 0.12, powerProb: 0.08, upgradeProb: 0.4, color: '#ffd700' },
+    { id: 'epic', name: 'Epic Chest', icon: '💎', time: 1000 * 60 * 60 * 8, minMoney: 300, maxMoney: 800, skinProb: 0.25, powerProb: 0.15, upgradeProb: 0.7, color: '#a855f7' },
+    { id: 'legendary', name: 'Legendary Chest', icon: '⭐', time: 1000 * 60 * 60 * 24, minMoney: 1000, maxMoney: 2500, skinProb: 0.60, powerProb: 0.40, upgradeProb: 1.0, color: '#ef4444' }
 ];
 
 const SKINS = [
-    { id: 'default', name: 'Estandar', color: '#22c55e', style: 'normal', weight: 100 },
-    { id: 'blue', name: 'Azul Marino', color: '#3b82f6', style: 'normal', weight: 50 },
-    { id: 'red', name: 'Rojo Fuego', color: '#ef4444', style: 'normal', weight: 50 },
+    { id: 'default', name: 'Standard', color: '#22c55e', style: 'normal', weight: 100 },
+    { id: 'blue', name: 'Deep Blue', color: '#3b82f6', style: 'normal', weight: 50 },
+    { id: 'red', name: 'Fire Red', color: '#ef4444', style: 'normal', weight: 50 },
     { id: 'spiderman', name: 'Spiderman', color: '#dc2626', style: 'web', weight: 2 },
-    { id: 'gold', name: 'Dorado', color: '#fbbf24', style: 'normal', weight: 20 }
+    { id: 'gold', name: 'Golden', color: '#fbbf24', style: 'normal', weight: 20 }
 ];
 
 const SUPERPOWERS_DATA = [
-    { id: 'dash', name: 'Dash', icon: '⚡', desc: 'Impulso rápido (Espacio)' },
-    { id: 'superball', name: 'Super Bola', icon: '🔮', desc: 'Bola gigante perforante (Espacio)' }
+    { id: 'dash', name: 'Dash', icon: '⚡', desc: 'Quick boost (Space)' },
+    { id: 'superball', name: 'Super Ball', icon: '🔮', desc: 'Giant piercing ball (Space)' }
 ];
 
 const META_UPGRADES = [
-    { id: 'hp', icon: '❤️', name: 'Vitalidad', desc: '+20 HP Máx', levels: 6, basePrice: 100, mult: 1.8 },
-    { id: 'dmg', icon: '💥', name: 'Fuerza', desc: '+5 Daño Base', levels: 6, basePrice: 150, mult: 2.0 },
-    { id: 'spd', icon: '⚡', name: 'Rapidez', desc: '+8% Vel. Base', levels: 6, basePrice: 200, mult: 2.2 },
-    { id: 'mag', icon: '🧲', name: 'Atracción', desc: '+30 Rango Imán', levels: 6, basePrice: 120, mult: 1.7 },
+    { id: 'hp', icon: '❤️', name: 'Vitality', desc: '+20 Max HP', levels: 6, basePrice: 100, mult: 1.8 },
+    { id: 'dmg', icon: '💥', name: 'Strength', desc: '+5 Base Damage', levels: 6, basePrice: 150, mult: 2.0 },
+    { id: 'spd', icon: '⚡', name: 'Speed', desc: '+8% Base Spd', levels: 6, basePrice: 200, mult: 2.2 },
+    { id: 'mag', icon: '🧲', name: 'Attraction', desc: '+30 Magnet Range', levels: 6, basePrice: 120, mult: 1.7 },
 ];
 
 let meta = {
@@ -222,7 +346,7 @@ function renderChests() {
         slot.className = 'chest-slot' + (!chest ? ' empty' : '');
 
         if (!chest) {
-            slot.innerHTML = 'Vacío';
+            slot.innerHTML = 'Empty';
         } else {
             const type = CHEST_TYPES.find(t => t.id === chest.type);
             const now = Date.now();
@@ -234,10 +358,10 @@ function renderChests() {
                         <div class="chest-icon" style="color: ${type.color}">${type.icon}</div>
                         <div class="chest-info">
                             <div class="chest-name">${type.name}</div>
-                            <div class="chest-timer">${canOpen ? '¡LISTO!' : formatTime(remaining)}</div>
+                            <div class="chest-timer">${canOpen ? 'READY!' : formatTime(remaining)}</div>
                         </div>
                         <button class="btn-chest" ${isUnlocking ? 'disabled' : ''}>
-                            ${canOpen ? 'ABRIR' : (isUnlocking ? '...' : 'DESBLOQUEAR')}
+                            ${canOpen ? 'OPEN' : (isUnlocking ? '...' : 'UNLOCK')}
                         </button>
                     `;
             const btn = slot.querySelector('.btn-chest');
@@ -265,7 +389,7 @@ function renderSkins() {
                     </div>
                     <div class="up-title">
                         <h3>${skin.name}</h3>
-                        <p>${isUnlocked ? (isSelected ? 'Seleccionado' : 'Desbloqueado') : 'Bloqueado'}</p>
+                        <p>${isUnlocked ? (isSelected ? 'Selected' : 'Unlocked') : 'Locked'}</p>
                     </div>
                     ${isSelected ? '<div class="check-badge">✓</div>' : ''}
                 `;
@@ -296,7 +420,7 @@ function renderPowers() {
                             <p>${power.desc}</p>
                         </div>
                     </div>
-                    <p style="font-size: 0.75rem; color: var(--muted)">${isUnlocked ? (isSelected ? 'Seleccionado' : 'Desbloqueado') : 'Bloqueado'}</p>
+                    <p style="font-size: 0.75rem; color: var(--muted)">${isUnlocked ? (isSelected ? 'Selected' : 'Unlocked') : 'Locked'}</p>
                     ${isSelected ? '<div class="check-badge">✓</div>' : ''}
                 `;
         if (isUnlocked) {
@@ -382,7 +506,7 @@ async function openChest(idx, slotElement) {
     meta.money += money;
 
     let rewards = [
-        { text: `${money} Monedas`, icon: '💰' }
+        { text: `${money} Coins`, icon: '💰' }
     ];
 
     // Probabilidades
@@ -406,7 +530,7 @@ async function openChest(idx, slotElement) {
         if (availablePowers.length > 0) {
             const power = availablePowers[Math.floor(Math.random() * availablePowers.length)];
             meta.unlockedPowers.push(power.id);
-            rewards.push({ text: `Poder: ${power.name}`, icon: power.icon });
+            rewards.push({ text: `Power: ${power.name}`, icon: power.icon });
         }
     }
 
@@ -521,14 +645,14 @@ function renderPreview() {
 renderPreview();
 
 // ══════════════════════════════════════════════════════════════════════════════
-// MINI-JUEGO ARCADE – pantalla "Cómo funciona"
+// ARCADE MINI-GAME – "How it works" screen
 // ══════════════════════════════════════════════════════════════════════════════
 (function () {
 
     const arcCanvas = document.getElementById('arcadeCanvas');
     const arcCtx = arcCanvas.getContext('2d');
 
-    // ── Tamaños dinámicos ─────────────────────────────────────────────────────────
+    // ── Dynamic Sizes ─────────────────────────────────────────────────────────
     function resizeArcCanvas() {
         const infoEl = document.getElementById('info');
         const header = infoEl.querySelector('.info-header');
@@ -539,11 +663,11 @@ renderPreview();
         arcCanvas.height = Math.max(window.innerHeight - hh - ch, 300);
     }
 
-    // ── Estado del juego ──────────────────────────────────────────────────────────
+    // ── Game State ──────────────────────────────────────────────────────────
     const PLAYER_RADIUS = 18;
     const ENEMY_RADIUS = 14;
     const BULLET_RADIUS = 6;
-    const PLAYER_SPEED = 3.0; // Aumentada velocidad base
+    const PLAYER_SPEED = 3.0; 
     const BULLET_SPEED = 9;
     const ENEMY_BASE_SPEED = 1.0;
     const PLAYER_MAX_HP = 100;
@@ -551,16 +675,16 @@ renderPreview();
     const DAMAGE_PER_HIT = 20;
 
     const POWERUPS = [
-        { id: 'dmg', icon: '💥', title: 'Munición Pesada', desc: '+15 Daño por bala', apply: () => player.damage += 15 },
-        { id: 'spd', icon: '⚡', title: 'Agilidad', desc: '+25% Velocidad de mov.', apply: () => player.speedMult += 0.25 },
-        { id: 'fire', icon: '🔥', title: 'Fuego Rápido', desc: 'Dispara un 30% más rápido', apply: () => player.fireRateMult *= 0.7 },
-        { id: 'hp', icon: '❤️', title: 'Vitalidad', desc: '+50 Vida Máx y curación total', apply: () => { player.maxHp += 50; player.hp = player.maxHp; } },
-        { id: 'multi', icon: '🔫', title: 'Multidisparo', desc: 'Dispara una bala extra a la vez', apply: () => player.multiShot += 1 },
-        { id: 'pierce', icon: '👻', title: 'Perforación', desc: 'Las balas atraviesan +1 enemigo', apply: () => player.pierce += 1 },
-        { id: 'vamp', icon: '🧛', title: 'Vampirismo', desc: 'Cura 2 HP por cada enemigo', apply: () => player.vampirism += 2 },
-        { id: 'magnet', icon: '🧲', title: 'Magnetismo', desc: 'Atrae la Experiencia desde más lejos', apply: () => player.magnetRadius += 80 },
-        { id: 'tank', icon: '🛡️', title: 'Piel de Piedra', desc: 'Ganas +25 Vida Máx y tus balas hacen +10 Daño', apply: () => { player.maxHp += 25; player.hp += 25; player.damage += 10; } },
-        { id: 'exp', icon: '🧠', title: 'Sabiduría', desc: 'Los enemigos sueltan un 50% más de Experiencia', apply: () => player.xpMult += 0.5 },
+        { id: 'dmg', icon: '💥', title: 'Heavy Ammo', desc: '+15 Damage per bullet', apply: () => player.damage += 15 },
+        { id: 'spd', icon: '⚡', title: 'Agility', desc: '+25% Movement speed', apply: () => player.speedMult += 0.25 },
+        { id: 'fire', icon: '🔥', title: 'Rapid Fire', desc: 'Shoot 30% faster', apply: () => player.fireRateMult *= 0.7 },
+        { id: 'hp', icon: '❤️', title: 'Vitality', desc: '+50 Max HP and full heal', apply: () => { player.maxHp += 50; player.hp = player.maxHp; } },
+        { id: 'multi', icon: '🔫', title: 'Multishot', desc: 'Shoot one extra bullet', apply: () => player.multiShot += 1 },
+        { id: 'pierce', icon: '👻', title: 'Piercing', desc: 'Bullets pierce +1 enemy', apply: () => player.pierce += 1 },
+        { id: 'vamp', icon: '🧛', title: 'Vampirism', desc: 'Heal 2 HP per kill', apply: () => player.vampirism += 2 },
+        { id: 'magnet', icon: '🧲', title: 'Magnetism', desc: 'Attract gems from further away', apply: () => player.magnetRadius += 80 },
+        { id: 'tank', icon: '🛡️', title: 'Stone Skin', desc: '+25 Max HP and +10 Damage', apply: () => { player.maxHp += 25; player.hp += 25; player.damage += 10; } },
+        { id: 'exp', icon: '🧠', title: 'Wisdom', desc: 'Gain 50% more Experience', apply: () => player.xpMult += 0.5 },
     ];
 
     // ── Web Audio API (Sfx) ───────────────────────────────────────────────────────
@@ -1245,15 +1369,15 @@ renderPreview();
                     flashAlpha = 0.55;
                     Sfx.play('hurt');
                     for (let k = 0; k < 8; k++) particles.push(makeParticle(player.x, player.y, '#ef4444'));
-                        if (player.hp <= 0) {
-                            player.hp = 0;
-                            arcState = 'dead';
-                            Sfx.play('death');
-                            grantRandomChest();
-                            saveHighScore(); 
-                            saveMeta();
-                            showDeathOverlay();
-                        }
+                    if (player.hp <= 0) {
+                        player.hp = 0;
+                        arcState = 'dead';
+                        Sfx.play('death');
+                        grantRandomChest();
+                        saveHighScore();
+                        saveMeta();
+                        showDeathOverlay();
+                    }
                     break;
                 }
             }
@@ -1636,13 +1760,13 @@ renderPreview();
     async function renderLeaderboard() {
         const body = document.getElementById('leaderboard-body');
         const userBestRow = document.getElementById('user-best-row');
-        
-        body.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 2rem;">Cargando clasificación global... 🌍</td></tr>';
-        
+
+        body.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 2rem;">Loading global rankings... 🌍</td></tr>';
+
         const hiStr = localStorage.getItem('survivalArcHighScore');
         const hiScore = hiStr ? parseInt(hiStr) : 0;
-        const myName = localStorage.getItem('survivalPlayerName') || 'Tú';
-        
+        const myName = localStorage.getItem('survivalPlayerName') || 'You';
+
         userBestRow.innerHTML = `
             <div class="user-info">
                 <span>🏆</span>
@@ -1662,16 +1786,16 @@ renderPreview();
                 .select('*')
                 .order('score', { ascending: false })
                 .limit(10);
-                
+
             if (error) throw error;
-            
+
             if (data && data.length > 0) {
                 body.innerHTML = data.map((entry, i) => {
                     const isMe = entry.player_name === myName && entry.score === hiScore;
                     return `
                         <tr style="${isMe ? 'background: rgba(99, 102, 241, 0.15);' : ''}">
                             <td>#${i + 1}</td>
-                            <td>${entry.player_name} ${isMe ? '<span style="color:var(--accent);font-size:0.75rem;margin-left:5px;">(Tú)</span>' : ''}</td>
+                            <td>${entry.player_name} ${isMe ? '<span style="color:var(--accent);font-size:0.75rem;margin-left:5px;">(You)</span>' : ''}</td>
                             <td>${entry.score.toLocaleString()}</td>
                             <td style="text-align: center;">${entry.wave || '?'}</td>
                         </tr>
@@ -1706,7 +1830,7 @@ renderPreview();
 
     function renderPausePowers() {
         if (!player) return;
-        
+
         pausePowerList.innerHTML = (player.acquiredPowers || []).map(p => `
             <div class="pause-power-item">
                 <span>${p.icon}</span>

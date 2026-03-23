@@ -25,19 +25,19 @@
         <div class="logo-big">
             <span class="icon">⚔️</span>
             <h1>SurvivalGame</h1>
-            <p>Simulación de persecución y huida</p>
+            <p>Survive the enemy hordes!</p>
         </div>
 
         <div class="menu-cards">
             <div class="menu-card" id="btn-goto-shop">
                 <span class="card-icon">⚔️</span>
-                <h2>Jugar</h2>
-                <p>Mejora a tu héroe, gasta tus monedas y prepárate para la batalla infinita.</p>
+                <h2>Play</h2>
+                <p>Improve your hero, spend your coins and prepare for the infinite battle.</p>
             </div>
             <div class="menu-card" id="btn-goto-leaderboard">
                 <span class="card-icon">🏆</span>
-                <h2>Clasificación</h2>
-                <p>Compite por el top 10 y mira tu récord personal frente a los mejores.</p>
+                <h2>Leaderboard</h2>
+                <p>Compete for the top 10 and see your personal record against the best.</p>
             </div>
         </div>
     </div>
@@ -48,10 +48,10 @@
     <div id="shop" class="screen hidden">
         <div class="shop-container">
             <div class="shop-header">
-                <button class="btn-back" id="btn-shop-back">← Menú</button>
+                <button class="btn-back" id="btn-shop-back">← Menu</button>
                 <div class="shop-title">
-                    <h2>Armería y Mejoras</h2>
-                    <p>Invierte tus monedas en el entrenamiento de tu héroe</p>
+                    <h2>Armory and Upgrades</h2>
+                    <p>Invest your coins in your hero's training</p>
                 </div>
                 <div class="money-display">
                     <span class="money-icon">💰</span>
@@ -67,49 +67,49 @@
                         </div>
                         <div class="hero-stats">
                             <div class="hero-stat"><span>HP:</span><strong id="stat-hp">100</strong></div>
-                            <div class="hero-stat"><span>Daño:</span><strong id="stat-dmg">10</strong></div>
-                            <div class="hero-stat"><span>Velocidad:</span><strong id="stat-spd">1.0x</strong></div>
-                            <div class="hero-stat"><span>Rango:</span><strong id="stat-mag">120</strong></div>
+                            <div class="hero-stat"><span>Damage:</span><strong id="stat-dmg">10</strong></div>
+                            <div class="hero-stat"><span>Speed:</span><strong id="stat-spd">1.0x</strong></div>
+                            <div class="hero-stat"><span>Range:</span><strong id="stat-mag">120</strong></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="shop-main-content">
                     <div class="tabs-header">
-                        <button class="tab-btn active" data-tab="upgrades">Mejoras</button>
+                        <button class="tab-btn active" data-tab="upgrades">Upgrades</button>
                         <button class="tab-btn" data-tab="skins">Skins</button>
-                        <button class="tab-btn" data-tab="powers">Poderes</button>
+                        <button class="tab-btn" data-tab="powers">Powers</button>
                     </div>
 
                     <div class="tab-content active" id="tab-upgrades">
                         <div class="upgrades-grid" id="upgrades-container">
-                            <!-- Las mejoras se cargarán dinámicamente desde JS -->
+                            <!-- Upgrades will be loaded dynamically from JS -->
                         </div>
                     </div>
 
                     <div class="tab-content" id="tab-skins">
                         <div class="skins-grid" id="skins-container">
-                            <!-- Skins aquí -->
+                            <!-- Skins here -->
                         </div>
                     </div>
 
                     <div class="tab-content" id="tab-powers">
                         <div class="powers-grid" id="powers-container">
-                            <!-- Poderes aquí -->
+                            <!-- Powers here -->
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="chests-section">
-                <h3>Tus Cofres</h3>
+                <h3>Your Chests</h3>
                 <div class="chests-grid" id="chests-container">
-                    <!-- Cofres aquí -->
+                    <!-- Chests here -->
                 </div>
             </div>
 
             <div class="shop-footer">
-                <button class="btn btn-primary btn-large" id="btn-start-arcade">¡A LA BATALLA! ⚔️</button>
+                <button class="btn btn-primary btn-large" id="btn-start-arcade">TO BATTLE! ⚔️</button>
             </div>
         </div>
     </div>
@@ -117,53 +117,53 @@
 
 
     <!-- ══════════════════════════════════════════════════════════════════════════
-     PANTALLA 4 – MINI-JUEGO "CÓMO FUNCIONA"
+     SCREEN 4 – ARCADE GAME (HUD)
      ══════════════════════════════════════════════════════════════════════════ -->
     <div id="info" class="screen hidden">
-        <!-- Cabecera con HUD -->
+        <!-- Header with HUD -->
         <div class="info-header">
-            <button class="btn-back" id="btn-info-back">← Menú</button>
-            <h2>⚔️ ¡Sobrevive!</h2>
-            <!-- Vida y Nivel -->
+            <button class="btn-back" id="btn-info-back">← Menu</button>
+            <h2>⚔️ Survive!</h2>
+            <!-- HP and Level -->
             <div class="info-hud">
                 <div class="hud-item">
                     <span class="hud-label">❤️</span>
                     <div class="health-bar-wrap">
-                        <div class="health-bar-inner green" id="arc-player-bar" style="width:100%"></div>
+                        <div class="health-bar-inner" id="arc-player-bar" style="width:100%"></div>
                     </div>
                 </div>
                 <div class="hud-item" style="margin-left:.2rem;">
-                    <span class="hud-label">⭐ Nv</span>
+                    <span class="hud-label">⭐ Lvl</span>
                     <span class="hud-val yellow" id="arc-level">1</span>
                 </div>
-                <div class="hud-item" title="Experiencia">
+                <div class="hud-item" title="Experience">
                     <div class="health-bar-wrap" style="width:50px;">
                         <div class="health-bar-inner blue" id="arc-xp-bar" style="width:0%"></div>
                     </div>
                 </div>
             </div>
-            <!-- Oleada y puntos -->
+            <!-- Wave and Score -->
             <div class="info-hud">
                 <div class="hud-item">
-                    <span class="hud-label">🌊 Ole</span>
+                    <span class="hud-label">🌊 Wave</span>
                     <span class="hud-val yellow" id="arc-wave">1</span>
                 </div>
                 <div class="hud-item">
-                    <span class="hud-label">💰 Monedas</span>
+                    <span class="hud-label">💰 Coins</span>
                     <span class="hud-val yellow" id="arc-score">0</span>
                 </div>
             </div>
-            <button class="btn btn-secondary" id="arc-pause-btn" style="font-size:.8rem;padding:.4rem .8rem;">⏸
-                Pausar</button>
+            <button class="btn-pause" id="btn-arc-pause" style="margin-left:auto; padding:0.4rem 0.8rem; font-size:0.8rem;">⏸
+                Pause</button>
         </div>
 
         <div id="arc-wrapper" style="position:relative;flex:1;display:flex;flex-direction:column;width:100%;">
             <!-- Level Up Overlay -->
             <div id="arc-levelup-overlay" class="hidden">
                 <div class="info-panel" style="background:transparent;border:none;box-shadow:none;">
-                    <h2 style="text-align:center;font-size:2.2rem;margin-bottom:.5rem;">✨ ¡Nivel <span
+                    <h2 style="text-align:center;font-size:2.2rem;margin-bottom:.5rem;">✨ Level <span
                             id="arc-lvl-display">2</span>!</h2>
-                    <p style="text-align:center;color:var(--muted);font-size:1.1rem;">Selecciona una mejora de poder</p>
+                    <p style="text-align:center;color:var(--muted);font-size:1.1rem;">Select a power upgrade</p>
                     <div class="powerup-cards" id="powerup-container"></div>
                 </div>
             </div>
@@ -171,16 +171,16 @@
             <!-- Pause Overlay -->
             <div id="arc-pause-overlay" class="hidden">
                 <div class="overlay-content">
-                    <h2>⏸ Partida Pausada</h2>
+                    <h2>⏸ Game Paused</h2>
                     <div class="pause-powers">
-                        <h3>Tus Poderes</h3>
+                        <h3>Your Powers</h3>
                         <div id="pause-power-list" class="pause-power-list">
-                            <!-- Se cargará por JS -->
+                            <!-- Loaded by JS -->
                         </div>
                     </div>
                     <div class="overlay-actions">
-                        <button class="btn btn-primary" id="btn-arc-resume">CONTINUAR</button>
-                        <button class="btn btn-secondary" id="btn-arc-pause-menu">MENÚ PRINCIPAL</button>
+                        <button class="btn btn-primary" id="btn-arc-resume">CONTINUE</button>
+                        <button class="btn btn-secondary" id="btn-arc-pause-menu">MAIN MENU</button>
                     </div>
                 </div>
             </div>
@@ -189,21 +189,24 @@
             <div id="arc-death-overlay" class="hidden">
                 <div class="overlay-content death">
                     <div class="death-icon">💀</div>
-                    <h2>¡HAS CAÍDO!</h2>
-                    <p id="death-stats">Oleada alcanzada: <span id="death-wave">0</span></p>
-                    <div class="death-highscore" id="death-new-hs">👑 ¡NUEVO RÉCORD! 👑</div>
+                    <h2>YOU HAVE FALLEN!</h2>
+                    <p id="death-stats">Wave reached: <span id="death-wave">0</span></p>
+                    <div class="death-highscore" id="death-new-hs">👑 NEW RECORD! 👑</div>
 
-                    <!-- Nombre para el ranking global -->
-                    <div id="death-name-section" style="margin: 0.8rem 0; display:flex; gap:0.5rem; align-items:center; justify-content:center; flex-wrap:wrap;">
-                        <label style="color:var(--muted);font-size:0.9rem;">🌍 Tu nombre en el ranking:</label>
-                        <input id="death-player-name" type="text" placeholder="Ej: CurroPG" maxlength="20"
+                    <!-- Name for global ranking -->
+                    <div id="death-name-section"
+                        style="margin: 0.8rem 0; display:flex; gap:0.5rem; align-items:center; justify-content:center; flex-wrap:wrap;">
+                        <label style="color:var(--muted);font-size:0.9rem;">🌍 Your name on the ranking:</label>
+                        <input id="death-player-name" type="text" placeholder="Ex: CurroPG" maxlength="20"
                             style="padding:0.4rem 0.8rem; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:0.95rem; width:140px;" />
-                        <button class="btn btn-secondary" id="btn-save-name" style="padding:0.4rem 0.8rem; font-size:0.85rem;">Guardar</button>
+                        <button class="btn btn-secondary" id="btn-save-name"
+                            style="padding:0.4rem 0.8rem; font-size:0.85rem;">Save</button>
                     </div>
 
                     <div class="overlay-actions vertical">
-                        <button class="btn btn-primary btn-large" id="btn-arc-death-restart">VOLVER A INTENTAR 🔄</button>
-                        <button class="btn btn-secondary" id="btn-arc-death-menu">IR AL MENÚ PRINCIPAL</button>
+                        <button class="btn btn-primary btn-large" id="btn-arc-death-restart">TRY AGAIN
+                            🔄</button>
+                        <button class="btn btn-secondary" id="btn-arc-death-menu">GO TO MAIN MENU</button>
                     </div>
                 </div>
             </div>
@@ -212,9 +215,9 @@
             <canvas id="arcadeCanvas"></canvas>
         </div>
 
-        <!-- Pista de controles -->
-        <div class="controls-hint">🕹️ WASD / Flechas para mover &nbsp;|&nbsp; 🖱️ Click para disparar &nbsp;|&nbsp; ❤️
-            Los enemigos te dañan al tocarte</div>
+        <!-- Controls Hint -->
+        <div class="controls-hint">🕹️ WASD / Arrows to move &nbsp;|&nbsp; 🖱️ Click to shoot &nbsp;|&nbsp; ❤️
+            Enemies damage you on touch</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════════════════
@@ -223,10 +226,10 @@
     <div id="leaderboard" class="screen hidden">
         <div class="leaderboard-container">
             <div class="leaderboard-header">
-                <button class="btn-back" id="btn-leaderboard-back">← Menú</button>
+                <button class="btn-back" id="btn-leaderboard-back">← Menu</button>
                 <div class="leaderboard-title">
                     <h2>🏆 Hall of Fame</h2>
-                    <p>Los 10 mejores supervivientes del mundo</p>
+                    <p>The top 10 survivors in the world</p>
                 </div>
             </div>
 
@@ -235,38 +238,38 @@
                     <thead>
                         <tr>
                             <th>POS</th>
-                            <th>JUGADOR</th>
-                            <th>PUNTOS</th>
-                            <th style="text-align: center;">OLEADA</th>
+                            <th>PLAYER</th>
+                            <th>POINTS</th>
+                            <th style="text-align: center;">WAVE</th>
                         </tr>
                     </thead>
                     <tbody id="leaderboard-body">
-                        <!-- Se cargará dinámicamente -->
+                        <!-- Loaded dynamically -->
                     </tbody>
                 </table>
             </div>
 
             <div class="user-best-section">
-                <p>Tu Mejor Puntuación</p>
+                <p>Your Best Score</p>
                 <div class="user-best-card" id="user-best-row">
-                    <!-- Se cargará dinámicamente -->
+                    <!-- Loaded dynamically -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Overlay de Recompensas -->
+    <!-- Reward Overlay -->
     <div id="reward-overlay" class="screen hidden">
         <div class="reward-content">
             <div class="reward-glow"></div>
             <div class="reward-chest-anim" id="reward-chest-icon">🎁</div>
-            <h2 id="reward-title">¡Cofre Abierto!</h2>
+            <h2 id="reward-title">Chest Opened!</h2>
             <div class="reward-list" id="reward-list"></div>
-            <button class="btn btn-primary" id="btn-reward-close">CONTINUAR</button>
+            <button class="btn btn-primary" id="btn-reward-close">CONTINUE</button>
         </div>
     </div>
 
-    <!-- Animación de Transición de Tiro -->
+    <!-- Shooting Transition Animation -->
     <div id="transition-overlay" class="hidden">
         <div class="transition-flash"></div>
         <div class="transition-projectile"></div>

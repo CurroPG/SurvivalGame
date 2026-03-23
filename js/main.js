@@ -82,11 +82,7 @@ safeBindClick('btn-config-back', () => showScreen('menu', 'left'));
 safeBindClick('btn-info-back', () => { arcadeStop(); showScreen('shop', 'left'); });
 safeBindClick('btn-game-back', () => { stopGame(); showScreen('menu', 'left'); });
 safeBindClick('btn-shop-back', () => showScreen('menu', 'left'));
-safeBindClick('btn-start-arcade', () => {
-    // Si la ID 'game' existe en screens, cargar 'game', sino probar 'info'
-    if (screens.game) showScreen('game');
-    else showScreen('info'); 
-});
+safeBindClick('btn-start-arcade', () => showScreen('info'));
 
 safeBindClick('btn-goto-leaderboard', () => {
     showScreen('leaderboard');

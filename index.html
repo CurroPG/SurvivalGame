@@ -29,11 +29,6 @@
         </div>
 
         <div class="menu-cards">
-            <div class="menu-card" id="btn-goto-config">
-                <span class="card-icon">🔬</span>
-                <h2>Simular</h2>
-                <p>Configura el número de buenos, malos y obstáculos y lanza la simulación.</p>
-            </div>
             <div class="menu-card" id="btn-goto-shop">
                 <span class="card-icon">⚔️</span>
                 <h2>Jugar</h2>
@@ -119,85 +114,7 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════════════════════════
-     PANTALLA 2 – CONFIGURACIÓN
-     ══════════════════════════════════════════════════════════════════════════ -->
-    <div id="config" class="screen hidden">
-        <div class="config-panel">
-            <h2>⚙️ Configurar simulación</h2>
-            <p class="sub">Ajusta los parámetros antes de iniciar la simulación</p>
 
-            <div class="param-group">
-                <!-- Buenos -->
-                <div class="param">
-                    <div class="param-header">
-                        <span class="param-label"><span class="param-dot green"></span>Buenos (huyen)</span>
-                        <span class="param-value green" id="val-buenos">10</span>
-                    </div>
-                    <input type="range" class="green" id="sl-buenos" min="1" max="80" value="10" />
-                </div>
-                <!-- Malos -->
-                <div class="param">
-                    <div class="param-header">
-                        <span class="param-label"><span class="param-dot red"></span>Malos (persiguen)</span>
-                        <span class="param-value red" id="val-malos">5</span>
-                    </div>
-                    <input type="range" class="red" id="sl-malos" min="1" max="40" value="5" />
-                </div>
-                <!-- Obstáculos -->
-                <div class="param">
-                    <div class="param-header">
-                        <span class="param-label"><span class="param-dot gray"></span>Obstáculos</span>
-                        <span class="param-value gray" id="val-obs">15</span>
-                    </div>
-                    <input type="range" class="gray" id="sl-obs" min="0" max="120" value="15" />
-                </div>
-            </div>
-
-            <div class="config-actions">
-                <button class="btn btn-secondary" id="btn-config-back">← Volver</button>
-                <button class="btn btn-primary" id="btn-start" style="flex:1">▶ Iniciar simulación</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════════════════════════
-     PANTALLA 3 – JUEGO
-     ══════════════════════════════════════════════════════════════════════════ -->
-    <div id="game" class="screen hidden">
-        <div class="game-header">
-            <button class="btn-back" id="btn-game-back">← Menú</button>
-            <div class="stats-bar">
-                <div class="stat">
-                    <div class="stat-dot green"></div>
-                    <span class="stat-label">Buenos</span>
-                    <span class="stat-value green" id="stat-buenos">0</span>
-                </div>
-                <div class="stat">
-                    <div class="stat-dot red"></div>
-                    <span class="stat-label">Malos</span>
-                    <span class="stat-value red" id="stat-malos">0</span>
-                </div>
-                <div class="stat">
-                    <div class="stat-dot gray"></div>
-                    <span class="stat-label">Obstáculos</span>
-                    <span class="stat-value" id="stat-obs">0</span>
-                </div>
-                <div class="stat" style="margin-left:auto;">
-                    <span class="stat-label">Tick</span>
-                    <span class="stat-value" id="stat-tick">0</span>
-                </div>
-            </div>
-            <div class="game-controls">
-                <button class="btn btn-secondary" id="btn-pause">⏸</button>
-                <button class="btn btn-secondary" id="btn-restart">🔄</button>
-            </div>
-        </div>
-
-        <div class="canvas-wrapper">
-            <canvas id="gameCanvas"></canvas>
-        </div>
-    </div>
 
     <!-- ══════════════════════════════════════════════════════════════════════════
      PANTALLA 4 – MINI-JUEGO "CÓMO FUNCIONA"
@@ -320,7 +237,7 @@
                             <th>POS</th>
                             <th>JUGADOR</th>
                             <th>PUNTOS</th>
-                            <th>OLEADA</th>
+                            <th style="text-align: center;">OLEADA</th>
                         </tr>
                     </thead>
                     <tbody id="leaderboard-body">

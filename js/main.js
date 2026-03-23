@@ -22,8 +22,6 @@
 // ── Navegación entre pantallas ────────────────────────────────────────────────
 const screens = {
     menu: document.getElementById('menu'),
-    config: document.getElementById('config'),
-    game: document.getElementById('game'),
     info: document.getElementById('info'),
     shop: document.getElementById('shop'),
     leaderboard: document.getElementById('leaderboard'),
@@ -39,8 +37,8 @@ function showScreen(name, direction = 'right') {
             s.classList.add('hidden');
         }
     });
-    // Start arcade for game/info screens
-    if (name === 'info' || name === 'game' || name === 'arcade') arcadeStart();
+    // Start arcade for info screens
+    if (name === 'info' || name === 'arcade') arcadeStart();
     else arcadeStop();
 }
 
@@ -78,9 +76,7 @@ safeBindClick('btn-goto-shop', () => {
     }, 1200); // Fin de la animación
 });
 
-safeBindClick('btn-config-back', () => showScreen('menu', 'left'));
-safeBindClick('btn-info-back', () => { arcadeStop(); showScreen('shop', 'left'); });
-safeBindClick('btn-game-back', () => { stopGame(); showScreen('menu', 'left'); });
+
 safeBindClick('btn-shop-back', () => showScreen('menu', 'left'));
 safeBindClick('btn-start-arcade', () => showScreen('info'));
 
@@ -90,118 +86,7 @@ safeBindClick('btn-goto-leaderboard', () => {
 });
 safeBindClick('btn-leaderboard-back', () => showScreen('menu', 'left'));
 
-// ── Simulación de Fondo en el Menú ────────────────────────────────────────────
-const menuSimCanvas = document.getElementById('menu-sim-canvas');
-const menuSimCtx = menuSimCanvas ? menuSimCanvas.getContext('2d') : null;
-let simRAF = null;
-let simEnemies = [];
-let simBullets = [];
-let simTick = 0;
-
-function initMenuSim() {
-    if (!menuSimCanvas) return;
-    menuSimCanvas.width = window.innerWidth;
-    menuSimCanvas.height = window.innerHeight;
-    simEnemies = [];
-    simBullets = [];
-    simTick = 0;
-}
-
-function menuSimLoop() {
-    if (!menuSimCanvas || document.getElementById('menu').classList.contains('hidden')) {
-        simRAF = requestAnimationFrame(menuSimLoop);
-        return;
-    }
-    
-    simTick++;
-    const cx = menuSimCanvas.width / 2;
-    const cy = menuSimCanvas.height / 2;
-    
-    if (Math.random() < 0.03 && simEnemies.length < 12) {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = Math.max(cx, cy) + 50;
-        simEnemies.push({
-            x: cx + Math.cos(angle) * dist,
-            y: cy + Math.sin(angle) * dist,
-            hp: Math.random() < 0.2 ? 3 : 1,
-            speed: 1 + Math.random() * 1.5,
-            color: Math.random() < 0.1 ? '#fbbf24' : '#ef4444' 
-        });
-    }
-    
-    if (simTick % 40 === 0 && simEnemies.length > 0) {
-        let nearest = simEnemies[0];
-        let minDist = Infinity;
-        for (let e of simEnemies) {
-            const d = Math.hypot(e.x - cx, e.y - cy);
-            if (d < minDist) { minDist = d; nearest = e; }
-        }
-        if (nearest) {
-            const a = Math.atan2(nearest.y - cy, nearest.x - cx);
-            simBullets.push({ x: cx, y: cy, vx: Math.cos(a) * 12, vy: Math.sin(a) * 12 });
-        }
-    }
-    
-    menuSimCtx.clearRect(0, 0, menuSimCanvas.width, menuSimCanvas.height);
-    
-    menuSimCtx.shadowBlur = 15;
-    menuSimCtx.shadowColor = '#22c55e';
-    menuSimCtx.fillStyle = '#22c55e';
-    menuSimCtx.beginPath(); menuSimCtx.arc(cx, cy, 18, 0, Math.PI * 2); menuSimCtx.fill();
-    menuSimCtx.shadowBlur = 0;
-    
-    menuSimCtx.fillStyle = '#fbbf24';
-    for (let i = simBullets.length - 1; i >= 0; i--) {
-        let b = simBullets[i];
-        b.x += b.vx; b.y += b.vy;
-        menuSimCtx.beginPath(); menuSimCtx.arc(b.x, b.y, 5, 0, Math.PI * 2); menuSimCtx.fill();
-        if (b.x < 0 || b.x > menuSimCanvas.width || b.y < 0 || b.y > menuSimCanvas.height) {
-            simBullets.splice(i, 1);
-        } else {
-            for (let j = simEnemies.length - 1; j >= 0; j--) {
-                let e = simEnemies[j];
-                if (Math.hypot(b.x - e.x, b.y - e.y) < 14 + 5) {
-                    e.hp--;
-                    simBullets.splice(i, 1);
-                    break;
-                }
-            }
-        }
-    }
-    
-    for (let i = simEnemies.length - 1; i >= 0; i--) {
-        let e = simEnemies[i];
-        if (e.hp <= 0) {
-            simEnemies.splice(i, 1);
-            continue;
-        }
-        const dx = cx - e.x, dy = cy - e.y;
-        const dist = Math.hypot(dx, dy);
-        e.x += (dx / dist) * e.speed;
-        e.y += (dy / dist) * e.speed;
-        
-        menuSimCtx.shadowColor = e.color;
-        menuSimCtx.shadowBlur = 10;
-        menuSimCtx.fillStyle = e.color;
-        menuSimCtx.beginPath(); menuSimCtx.arc(e.x, e.y, 14, 0, Math.PI * 2); menuSimCtx.fill();
-        menuSimCtx.shadowBlur = 0;
-        
-        if (dist < 18 + 14) {
-            const angle = Math.random() * Math.PI * 2;
-            const newDist = Math.max(cx, cy) + 50;
-            e.x = cx + Math.cos(angle) * newDist;
-            e.y = cy + Math.sin(angle) * newDist;
-        }
-    }
-    
-    simRAF = requestAnimationFrame(menuSimLoop);
-}
-
-if (menuSimCanvas) {
-    window.addEventListener('resize', initMenuSim);
-    initMenuSim();
-    simRAF = requestAnimationFrame(menuSimLoop);
-}
+safeBindClick('btn-info-back', () => { arcadeStop(); showScreen('shop', 'left'); });
 
 // ── Supabase Setup ────────────────────────────────────────────────────────────
 const _supabaseUrl = 'https://ovybbobxlamapbyvputc.supabase.co';
@@ -213,242 +98,7 @@ try {
     }
 } catch(e) { console.warn('Supabase init failed:', e); }
 
-// ── Sliders de configuración ──────────────────────────────────────────────────
-function bindSlider(sliderId, valueId) {
-    const sl = document.getElementById(sliderId);
-    const vl = document.getElementById(valueId);
-    function update() {
-        const pct = (sl.value - sl.min) / (sl.max - sl.min) * 100;
-        sl.style.setProperty('--pct', pct + '%');
-        vl.textContent = sl.value;
-    }
-    sl.addEventListener('input', update);
-    update();
-}
-bindSlider('sl-buenos', 'val-buenos');
-bindSlider('sl-malos', 'val-malos');
-bindSlider('sl-obs', 'val-obs');
 
-document.getElementById('btn-start').addEventListener('click', () => {
-    const cfg = {
-        buenos: +document.getElementById('sl-buenos').value,
-        malos: +document.getElementById('sl-malos').value,
-        obstaculos: +document.getElementById('sl-obs').value,
-    };
-    showScreen('game');
-    startGame(cfg);
-});
-
-document.getElementById('btn-restart').addEventListener('click', () => {
-    const cfg = {
-        buenos: +document.getElementById('sl-buenos').value,
-        malos: +document.getElementById('sl-malos').value,
-        obstaculos: +document.getElementById('sl-obs').value,
-    };
-    startGame(cfg);
-});
-
-// ── Pausa ─────────────────────────────────────────────────────────────────────
-let pausado = false;
-const btnPause = document.getElementById('btn-pause');
-btnPause.addEventListener('click', () => {
-    pausado = !pausado;
-    btnPause.textContent = pausado ? '▶' : '⏸';
-});
-
-// ══════════════════════════════════════════════════════════════════════════════
-// LÓGICA DEL JUEGO
-// ══════════════════════════════════════════════════════════════════════════════
-
-// ── Posicion ──────────────────────────────────────────────────────────────────
-class Posicion {
-    constructor(x, y) { this._x = x; this._y = y; }
-    getX() { return this._x; } setX(x) { this._x = x; }
-    getY() { return this._y; } setY(y) { this._y = y; }
-    static calcularDistancia(p1, p2) {
-        return Math.sqrt((p1._x - p2._x) ** 2 + (p1._y - p2._y) ** 2);
-    }
-}
-
-// ── Estrategias ───────────────────────────────────────────────────────────────
-const DX = [-1, 0, 1, -1, 1, -1, 0, 1];
-const DY = [-1, -1, -1, 0, 0, 1, 1, 1];
-
-class Huir {
-    mover(actual, objetivo, mapa) {
-        let best = 0, vx = 0, vy = 0;
-        for (let i = 0; i < 8; i++) {
-            const nx = actual._x + DX[i], ny = actual._y + DY[i];
-            if (nx >= 0 && nx < mapa[0].length && ny >= 0 && ny < mapa.length) {
-                const c = mapa[ny][nx];
-                if (c === null || (!c.esObstaculo() && !c.esBueno())) {
-                    const d = Posicion.calcularDistancia(new Posicion(nx, ny), objetivo);
-                    if (d > best) { best = d; vx = DX[i]; vy = DY[i]; }
-                }
-            }
-        }
-        return new Posicion(actual._x + vx, actual._y + vy);
-    }
-}
-
-class Perseguir {
-    mover(actual, objetivo, mapa) {
-        let best = Infinity, vx = 0, vy = 0;
-        for (let i = 0; i < 8; i++) {
-            const nx = actual._x + DX[i], ny = actual._y + DY[i];
-            if (nx >= 0 && nx < mapa[0].length && ny >= 0 && ny < mapa.length) {
-                const c = mapa[ny][nx];
-                if (c === null || (!c.esObstaculo() && !c.esMalo())) {
-                    const d = Posicion.calcularDistancia(new Posicion(nx, ny), objetivo);
-                    if (d < best) { best = d; vx = DX[i]; vy = DY[i]; }
-                }
-            }
-        }
-        return new Posicion(actual._x + vx, actual._y + vy);
-    }
-}
-
-// ── Elementos ─────────────────────────────────────────────────────────────────
-class Elementos {
-    constructor(x, y, mov) { this.posi = new Posicion(x, y); this.objetivo = null; this._mov = mov; }
-    getPosiX() { return this.posi._x; }
-    getPosiY() { return this.posi._y; }
-    getPosi() { return this.posi; }
-    setObjetivo(o) { this.objetivo = o; }
-    esObstaculo() { return false; } esMalo() { return false; } esBueno() { return false; }
-    mover(mapa) {
-        if (this.objetivo !== null)
-            this.posi = this._mov.mover(this.posi, this.objetivo.posi, mapa);
-    }
-}
-class Buenos extends Elementos { constructor(x, y) { super(x, y, new Huir()); } esBueno() { return true; } }
-class Malos extends Elementos { constructor(x, y) { super(x, y, new Perseguir()); } esMalo() { return true; } }
-class Obstaculos extends Elementos { constructor(x, y) { super(x, y, null); } esObstaculo() { return true; } }
-
-// ── Mapa ──────────────────────────────────────────────────────────────────────
-class Mapa {
-    constructor(alto, ancho) {
-        this.alto = alto; this.ancho = ancho;
-        this.grid = Array.from({ length: alto }, () => Array(ancho).fill(null));
-        this.buenos = []; this.malos = [];
-    }
-    _rnd(max) { return Math.floor(Math.random() * max); }
-    _freePos() {
-        let x, y;
-        do { x = this._rnd(this.ancho); y = this._rnd(this.alto); }
-        while (this.grid[y][x] !== null);
-        return { x, y };
-    }
-    _place(elem) {
-        const { x, y } = this._freePos();
-        elem.posi._x = x; elem.posi._y = y;
-        this.grid[y][x] = elem;
-    }
-    generarConConfig(numBuenos, numMalos, numObs) {
-        const maxElem = this.alto * this.ancho - 1;
-        numObs = Math.min(numObs, Math.floor(maxElem * 0.4));
-        numBuenos = Math.min(numBuenos, Math.floor((maxElem - numObs) * 0.6));
-        numMalos = Math.min(numMalos, maxElem - numObs - numBuenos);
-
-        for (let i = 0; i < numObs; i++)   this._place(new Obstaculos(0, 0));
-        for (let i = 0; i < numBuenos; i++) { const b = new Buenos(0, 0); this.buenos.push(b); this._place(b); }
-        for (let i = 0; i < numMalos; i++) { const m = new Malos(0, 0); this.malos.push(m); this._place(m); }
-    }
-    _nearMalo(b) {
-        let c = null, mn = Infinity;
-        for (const m of this.malos) { const d = Posicion.calcularDistancia(m.posi, b.posi); if (d < mn) { mn = d; c = m; } }
-        return c;
-    }
-    _nearBueno(m) {
-        let c = null, mn = Infinity;
-        for (const b of this.buenos) { const d = Posicion.calcularDistancia(m.posi, b.posi); if (d < mn) { mn = d; c = b; } }
-        return c;
-    }
-    refrescar() {
-        for (const b of this.buenos) { b.setObjetivo(this._nearMalo(b)); this.grid[b.getPosiY()][b.getPosiX()] = null; }
-        for (const m of this.malos) { m.setObjetivo(this._nearBueno(m)); this.grid[m.getPosiY()][m.getPosiX()] = null; }
-        for (const b of this.buenos) { b.mover(this.grid); this.grid[b.getPosiY()][b.getPosiX()] = b; }
-        for (const m of this.malos) { m.mover(this.grid); this.grid[m.getPosiY()][m.getPosiX()] = m; }
-        this.buenos = this.buenos.filter(b =>
-            !this.malos.some(m => m.getPosiX() === b.getPosiX() && m.getPosiY() === b.getPosiY())
-        );
-    }
-}
-
-// ── Canvas & Loop ─────────────────────────────────────────────────────────────
-const CELL = 10, ALTO = 60, ANCHO = 100, FPS_MS = 50;
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = ANCHO * CELL; canvas.height = ALTO * CELL;
-
-const elB = document.getElementById('stat-buenos');
-const elM = document.getElementById('stat-malos');
-const elO = document.getElementById('stat-obs');
-const elT = document.getElementById('stat-tick');
-
-let mapa, timer, tick = 0, numObsCfg = 0;
-
-function startGame(cfg) {
-    stopGame();
-    pausado = false; btnPause.textContent = '⏸';
-    mapa = new Mapa(ALTO, ANCHO);
-    mapa.generarConConfig(cfg.buenos, cfg.malos, cfg.obstaculos);
-    numObsCfg = cfg.obstaculos;
-    tick = 0;
-    timer = setInterval(gameLoop, FPS_MS);
-}
-
-function stopGame() {
-    if (timer) { clearInterval(timer); timer = null; }
-}
-
-function gameLoop() {
-    if (pausado) return;
-    mapa.refrescar();
-    tick++;
-    render();
-    elB.textContent = mapa.buenos.length;
-    elM.textContent = mapa.malos.length;
-    elO.textContent = numObsCfg;
-    elT.textContent = tick;
-    if (mapa.buenos.length === 0) { stopGame(); gameOver(); }
-}
-
-function render() {
-    ctx.fillStyle = '#080c14'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = '#111827'; ctx.lineWidth = .3;
-    for (let i = 0; i <= ALTO; i++) { ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(canvas.width, i * CELL); ctx.stroke(); }
-    for (let j = 0; j <= ANCHO; j++) { ctx.beginPath(); ctx.moveTo(j * CELL, 0); ctx.lineTo(j * CELL, canvas.height); ctx.stroke(); }
-
-    for (let i = 0; i < ALTO; i++) {
-        for (let j = 0; j < ANCHO; j++) {
-            const e = mapa.grid[i][j]; if (!e) continue;
-            const cx = j * CELL + CELL / 2, cy = i * CELL + CELL / 2, r = CELL / 2 - 1;
-            if (e.esObstaculo()) {
-                ctx.fillStyle = '#374151';
-                ctx.fillRect(j * CELL + 1, i * CELL + 1, CELL - 2, CELL - 2);
-                continue;
-            }
-            const col = e.esBueno() ? '#22c55e' : '#ef4444';
-            ctx.shadowColor = col; ctx.shadowBlur = 7;
-            ctx.fillStyle = col; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = 'rgba(255,255,255,.2)'; ctx.beginPath(); ctx.arc(cx - 1, cy - 1, r * .38, 0, Math.PI * 2); ctx.fill();
-        }
-    }
-}
-
-function gameOver() {
-    ctx.fillStyle = 'rgba(0,0,0,.7)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.shadowBlur = 24; ctx.shadowColor = '#ef4444';
-    ctx.fillStyle = '#ef4444';
-    ctx.font = `bold ${CELL * 3.2}px Inter,sans-serif`; ctx.textAlign = 'center';
-    ctx.fillText('¡Los malos ganaron!', canvas.width / 2, canvas.height / 2 - CELL * 1.5);
-    ctx.shadowBlur = 0; ctx.fillStyle = '#94a3b8';
-    ctx.font = `${CELL * 1.3}px Inter,sans-serif`;
-    ctx.fillText(`Supervivieron ${tick} ticks`, canvas.width / 2, canvas.height / 2 + CELL * 2);
-    ctx.fillText('Pulsa 🔄 para reiniciar', canvas.width / 2, canvas.height / 2 + CELL * 4);
-}
 
 // ── Meta Progresión ────────────────────────────────────────────────────────
 // ── Chests & Rewards ────────────────────────────────────────────────────────
@@ -2023,7 +1673,7 @@ renderPreview();
                             <td>#${i + 1}</td>
                             <td>${entry.player_name} ${isMe ? '<span style="color:var(--accent);font-size:0.75rem;margin-left:5px;">(Tú)</span>' : ''}</td>
                             <td>${entry.score.toLocaleString()}</td>
-                            <td>${entry.wave || '?'}</td>
+                            <td style="text-align: center;">${entry.wave || '?'}</td>
                         </tr>
                     `;
                 }).join('');

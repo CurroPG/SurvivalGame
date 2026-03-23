@@ -43,7 +43,7 @@
             /* Asegura que cada pantalla sea opaca */
         }
 
-        .screen.hidden {
+        .hidden {
             display: none !important;
             opacity: 0;
             pointer-events: none;

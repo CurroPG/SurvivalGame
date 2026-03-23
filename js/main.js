@@ -1769,13 +1769,7 @@ renderPreview();
     arcCanvas.addEventListener('touchend', endTouch);
     arcCanvas.addEventListener('touchcancel', endTouch);
 
-    // ── Botón reiniciar ───────────────────────────────────────────────────────────
-    document.getElementById('arc-restart').addEventListener('click', () => {
-        arcadeStop();
-        arcadeInit();
-        lastTime = performance.now();
-        arcRAF = requestAnimationFrame(arcadeLoop);
-    });
+    // Botón reiniciar fue reemplazado por el botón y menú de pausa.
 
     // ── Resize ────────────────────────────────────────────────────────────────────
     window.addEventListener('resize', () => {

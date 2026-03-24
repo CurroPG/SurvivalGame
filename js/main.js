@@ -47,7 +47,6 @@ function safeBindClick(id, callback) {
     if (el) el.addEventListener('click', callback);
 }
 
-safeBindClick('btn-goto-config', () => showScreen('config'));
 
 // ── Animación de Jugar (Tienda) ───────────────────────────────────────────────
 safeBindClick('btn-goto-shop', () => {

@@ -56,10 +56,14 @@ Invest your hard-earned coins in permanent stat upgrades:
 
 ---
 
-## 🚀 Installation
+## 🚀 Play Now
+
+### [Live Demo](https://survival-game-two.vercel.app/)
+
+Simply click the link above to play directly in your browser.
 
 ### Local Execution
-Simply open `index.html` in any modern web browser. No server or dependencies required.
+If you prefer to run it locally, open `index.html` in any modern web browser. No server or dependencies required.
 
 ---
 

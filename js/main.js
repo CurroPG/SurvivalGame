@@ -1072,8 +1072,17 @@ renderPreview();
         }
     }
 
-    // ── Actualización ─────────────────────────────────────────────────────────────
     function arcadeUpdate(dt) {
+        const factor = dt / (1000 / 60);
+        // Visuals always update (flash decay & particles)
+        if (flashAlpha > 0) flashAlpha -= dt * 0.003;
+        if (flashAlpha < 0) flashAlpha = 0;
+        particles = particles.filter(p => {
+            p.x += p.vx; p.y += p.vy;
+            p.life -= p.decay;
+            return p.life > 0;
+        });
+
         if (arcState === 'dead' || arcState === 'stopped' || arcState === 'levelup' || arcState === 'paused') return;
 
         if (arcState === 'waveclear') {
@@ -1085,8 +1094,6 @@ renderPreview();
             }
             return;
         }
-
-        const factor = dt / (1000 / 60);
 
         // Mover XP
         xpGems = xpGems.filter(g => {
@@ -1185,9 +1192,6 @@ renderPreview();
             }
         }
 
-        // Flash e Invencibilidad
-        if (flashAlpha > 0) flashAlpha -= dt * 0.003;
-        if (flashAlpha < 0) flashAlpha = 0;
         if (player.invincible > 0) player.invincible -= dt;
         if (player.shootCooldown > 0) player.shootCooldown -= dt;
 
@@ -1212,8 +1216,7 @@ renderPreview();
                     flashAlpha = 0.55;
                     for (let k = 0; k < 8; k++) particles.push(makeParticle(player.x, player.y, '#ef4444'));
                     if (player.hp <= 0) {
-                        player.hp = 0;
-                        arcState = 'dead';
+                        triggerGameOver();
                     }
                     return false; // se destruye la bala
                 }
@@ -1370,25 +1373,13 @@ renderPreview();
                     Sfx.play('hurt');
                     for (let k = 0; k < 8; k++) particles.push(makeParticle(player.x, player.y, '#ef4444'));
                     if (player.hp <= 0) {
-                        player.hp = 0;
-                        arcState = 'dead';
-                        Sfx.play('death');
-                        grantRandomChest();
-                        saveHighScore();
-                        saveMeta();
-                        showDeathOverlay();
+                        triggerGameOver();
                     }
                     break;
                 }
             }
         }
 
-        // Actualizar partículas
-        particles = particles.filter(p => {
-            p.x += p.vx; p.y += p.vy;
-            p.life -= p.decay;
-            return p.life > 0;
-        });
 
         if (enemies.length === 0 && arcState === 'playing') {
             arcState = 'waveclear';
@@ -1839,6 +1830,17 @@ renderPreview();
         `).join('') || '<p style="color:var(--muted)">Sin mejoras aún</p>';
     }
 
+    function triggerGameOver() {
+        if (arcState === 'dead') return;
+        player.hp = 0;
+        arcState = 'dead';
+        if (window.Sfx) window.Sfx.play('death');
+        grantRandomChest();
+        saveHighScore();
+        saveMeta();
+        showDeathOverlay();
+    }
+
     function showDeathOverlay() {
         document.getElementById('death-wave').textContent = wave;
         const hiStr = localStorage.getItem('survivalArcHighScore');
@@ -1859,7 +1861,7 @@ renderPreview();
     }
 
     // Botones
-    document.getElementById('arc-pause-btn').addEventListener('click', togglePause);
+    document.getElementById('btn-arc-pause').addEventListener('click', togglePause);
     document.getElementById('btn-arc-resume').addEventListener('click', togglePause);
     document.getElementById('btn-arc-pause-menu').addEventListener('click', () => {
         arcState = 'dead';

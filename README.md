@@ -1,87 +1,81 @@
-# ⚔️ SurvivalGame
+# ⚔️ NeoNBrawL
 
-> Simulación de persecución y huida · Modo Arcade con Metaprogresión
+> Arcade Survival Action · Metaprogression system · Global Leaderboard
 
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
-![Sin dependencias](https://img.shields.io/badge/dependencias-ninguna-22c55e?style=flat)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)
 
 ---
 
-## 📖 Descripción
+## 📖 Description
 
-SurvivalGame nació como práctica de programación orientada a objetos en Java y ha evolucionado a una aplicación web completa con un sistema profundo de **metaprogresión**.
+**NeoNBrawL** (formerly SurvivalGame) began as an object-oriented programming exercise in Java and has evolved into a complete web-based arcade game with a deep **metaprogression** and reward system.
 
-El núcleo del juego modela el **comportamiento emergente de agentes autónomos**: entidades *buenas* que huyen y entidades *malas* que persiguen, usando estrategias de movimiento intercambiables (patrón Strategy).
-
----
-
-## 🎮 Modos de juego
-
-### 🔬 Simulación
-Configura libremente el número de buenos, malos y obstáculos para observar cómo interactúan en tiempo real. Ideal para estudiar comportamientos emergentes.
-
-### ⚔️ Arcade (RPG Lite)
-Tú eres el jugador. Sobrevive a oleadas de enemigos, gana experiencia, sube de nivel y elige power-ups temporales. Ahora incluye un **sistema de moneda** para comprar mejoras permanentes.
+Challenge yourself against infinite waves of enemies, collect gems to level up, and unlock powerful abilities to survive as long as possible!
 
 ---
 
-## ✨ Características Principales
+## 🎮 Game Experience
 
-- 🧬 **Metaprogresión Permanente** — Gana monedas en el modo arcade y gástalas en la **Tienda** para mejorar para siempre tu Vitalidad, Fuerza, Rapidez y Rango de imán.
-- 💾 **Persistencia con LocalStorage** — Tus mejoras y monedas se guardan automáticamente en el navegador.
-- 🌊 **Oleadas de Jefes** — Enfrenta a 6 tipos de enemigos (Normal, Runner, Shooter, Miniboss, Boss y **Superboss**) con patrones de ataque únicos.
-- 🗺️ **Mapa Expandido** — A partir de la ronda 10 el mapa se expande y desde la 15 se convierte en un **mapa infinito con cámara dinámica**.
-- 🧠 **Arquitectura Sólida** — Basado en patrones de diseño (Strategy) y OOP, manteniendo la esencia del diseño Java original.
-- 📱 **Soporte Móvil Pro** — Joystick táctil con movimiento analógico y auto-apuntado inteligente.
-- 🎨 **Estética Premium** — Dark mode, efectos de partículas, animaciones fluidas y Web Audio API para efectos de sonido.
+### ⚔️ Arcade Mode
+Survive against increasingly difficult waves of enemies. Gain experience, level up, and select temporary power-ups to enhance your build. Every run rewards you with coins and potential **chests**.
+
+### 🛠️ Armory and Upgrades
+Invest your hard-earned coins in permanent stat upgrades:
+- **Vitality**: Increase your Max HP.
+- **Strength**: Boost your base damage.
+- **Speed**: Improve your movement velocity.
+- **Attraction**: Expand your magnet range for gems.
 
 ---
 
-## 🕹️ Controles
+## ✨ Key Features
 
-| Acción | Teclado / Ratón | Móvil |
+- 🎁 **Chest & Reward System** — Earn and unlock 5 tiers of chests (Wooden to Legendary) with time-based unlocking. Get coins, unique skins, superpowers, and permanent buffs.
+- 🎨 **Skin Customization** — Personalize your hero with various skins like *Standard*, *Deep Blue*, *Spiderman*, or the rare *Golden* skin.
+- ⚡ **Superpowers** — Equip and activate game-changing abilities:
+    - **Dash**: Quick movement burst to escape tight spots.
+    - **Super Ball**: A massive, piercing projectile that obliterates everything in its path.
+- 🌊 **Dynamic Waves & Bosses** — Encounter 6 enemy types with unique behaviors, culminating in **Mini-bosses**, **Bosses**, and the fearsome **Super Boss** every 15 waves.
+- 🗺️ **Expanding World** — The map transitions from a fixed boundary to a **massive, infinite world** with a dynamic camera system as you progress past wave 15.
+- 🏆 **Global Leaderboard** — Compete with players worldwide! Your high scores are synced to a real-time global ranking powered by **Supabase**.
+- 📱 **Mobile Optimized** — Full touch support with a virtual joystick and smart auto-aiming.
+- 🎨 **Premium Visuals** — Neon aesthetic, particle systems, glassmorphism UI, and immersive sound effects.
+
+---
+
+## 🕹️ Controls
+
+| Action | Keyboard / Mouse | Mobile |
 |--------|----------------|-------|
-| Mover | `WASD` o flechas | Joystick táctil |
-| Disparar | Click izquierdo (Apuntar con ratón) | Auto-apuntado automático |
+| **Move** | `WASD` or Arrows | Virtual Joystick |
+| **Shoot** | Left Click (Aim with Mouse) | Smart Auto-Aim |
+| **Power** | `Spacebar` | Automatic (Super Ball) |
 
 ---
 
-## 🚀 Instalación y Despliegue
+## 🚀 Installation
 
-### Ejecución local
-Simplemente abre el archivo `index.html` en cualquier navegador moderno. No requiere servidor ni instalación de dependencias.
-
-### Despliegue en Vercel / Netlify
-1. Sube el repositorio.
-2. Configura el **directorio raíz** como el de este repositorio.
-3. El despliegue es automático (sitio estático).
+### Local Execution
+Simply open `index.html` in any modern web browser. No server or dependencies required.
 
 ---
 
-## 🗂️ Estructura del Proyecto
+## 🗂️ Project Structure
 
 ```
-SurvivalGame/
-├── index.html      # Estructura y contenedores de pantallas
-├── style.css       # Diseño visual, animaciones y sistema de temas
+NeoNBrawL/
+├── index.html      # UI Structure & HUD
+├── style.css       # Visual design, themes & animations
 ├── js/
-│   └── main.js     # Lógica completa: OOP, Motor del juego, Arcade y Tienda
+│   └── main.js     # Engine, Arcade logic, Shop & API integration
 └── README.md
 ```
 
 ---
 
-## 🧪 Próximos Pasos (Roadmap)
+## 👤 Author
 
-- [ ] Efectos visuales de "Shake" en la cámara al recibir daño.
-- [ ] Nuevos biomas visuales que cambien cada 10 oleadas.
-- [ ] Sistema de Logros (Achievements) vinculados a la metaprogresión.
-- [ ] Tabla de récords global (requiere backend).
-
----
-
-## 👤 Autor
-
-Desarrollado por **CurroPG** — [github.com/CurroPG/SurvivalGameJava](https://github.com/CurroPG/SurvivalGameJava)
+Developed by **CurroPG** — [github.com/CurroPG](https://github.com/CurroPG)

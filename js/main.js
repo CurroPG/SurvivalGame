@@ -1827,7 +1827,7 @@ renderPreview();
                 <span>${p.icon}</span>
                 <span>${p.title}</span>
             </div>
-        `).join('') || '<p style="color:var(--muted)">Sin mejoras aún</p>';
+        `).join('') || '<p style="color:var(--muted)">No upgrades yet</p>';
     }
 
     function triggerGameOver() {
@@ -1861,9 +1861,9 @@ renderPreview();
     }
 
     // Botones
-    document.getElementById('arc-pause-btn').addEventListener('click', togglePause);
-    document.getElementById('btn-arc-resume').addEventListener('click', togglePause);
-    document.getElementById('btn-arc-pause-menu').addEventListener('click', () => {
+    safeBindClick('btn-arc-pause', togglePause);
+    safeBindClick('btn-arc-resume', togglePause);
+    safeBindClick('btn-arc-pause-menu', () => {
         arcState = 'dead';
         arcadeStop();
         pauseOverlay.classList.add('hidden');
@@ -1875,7 +1875,7 @@ renderPreview();
         const nameInput = document.getElementById('death-player-name');
         if (!nameInput) return;
         let name = nameInput.value.trim();
-        if (!name) name = 'Jugador_' + Math.floor(Math.random() * 9999);
+        if (!name) name = 'Player_' + Math.floor(Math.random() * 9999);
         localStorage.setItem('survivalPlayerName', name);
         const nameSection = document.getElementById('death-name-section');
         if (nameSection) nameSection.style.display = 'none';
@@ -1883,11 +1883,11 @@ renderPreview();
         saveToLeaderboard(score, wave);
     });
 
-    document.getElementById('btn-arc-death-restart').addEventListener('click', () => {
+    safeBindClick('btn-arc-death-restart', () => {
         deathOverlay.classList.add('hidden');
         arcadeInit();
     });
-    document.getElementById('btn-arc-death-menu').addEventListener('click', () => {
+    safeBindClick('btn-arc-death-menu', () => {
         deathOverlay.classList.add('hidden');
         showScreen('menu', 'left');
     });
